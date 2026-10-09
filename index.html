@@ -210,8 +210,11 @@ ruby rt { font-family: var(--ud); font-weight: 400; ruby-align: center; }
 .pairs.stack .a { grid-area: a; padding-left: 1em; }
 .pairs.stack .sep { display: none; }
 .pairs.stack .times { grid-area: t; }
-button.a.cover { font: inherit; font-weight: 700; padding: 0 4px; margin: 0; border: 0; border-radius: 6px; min-width: 4em; background: repeating-linear-gradient(-45deg, var(--paper-2) 0 6px, var(--line) 6px 8px); color: transparent; position: relative; min-height: 44px; text-align: left; }
+button.a.cover { font: inherit; font-weight: 700; padding: 0 4px; margin: 0; border: 0; border-radius: 6px; min-width: 4em; background: repeating-linear-gradient(-45deg, var(--paper-2) 0 6px, var(--line) 6px 8px); color: transparent; position: relative; min-height: max(32px, calc(var(--fs) * 1.5)); text-align: left; }
 .pairs.stack button.a.cover { min-height: max(28px, calc(var(--fs) * 1.6)); }
+.pairs.hidemode button.a.cover { width: 3.5em; white-space: nowrap; overflow: hidden; z-index: 1; }
+.pairs.hidemode button.a.cover.peek { overflow: visible; }
+.pairs.hidemode button.a.cover.peek { background: var(--sheet); outline: 2px solid var(--answer); border-radius: 6px; z-index: 3; width: auto; min-width: 3.5em; }
 .pairs.stack button.a.cover:not(.peek) rt { display: none; }
 button.a.cover rt { color: transparent; }
 button.a.cover::after { content: "？"; position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-2); font-size: .8em; }
@@ -421,6 +424,27 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
 .pgraph line.m { stroke: #444; stroke-width: .5; }
 .pgraph line.h { stroke: #ccc; stroke-width: .3; }
 .pgraph text { font-size: 7.5px; fill: #333; font-family: var(--ud); }
+
+/* 高さの低い画面（iPhone SE・Safari のバーが出ているとき）：上を1行に、ボタンと余白を詰める（D-63） */
+@media (max-height: 760px) and (orientation: portrait) {
+  #app.screen-run { gap: 4px; padding-top: max(6px, env(safe-area-inset-top)); padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+  .runhead { grid-template-columns: auto 1fr auto auto; grid-template-areas: "clock loop lap pause"; gap: 0 8px; padding-bottom: 4px; }
+  .clock small, .modechip { display: none; }
+  .clock span { font-size: 28px; }
+  .pause { width: 56px; height: 56px; font-size: 20px; }
+  .loop li { width: 24px; height: 24px; font-size: 12px; }
+  .loop li + li { margin-left: 10px; }
+  .loop li + li::before { width: 10px; }
+  .lapno { font-size: 13px; }
+  .lapno b { font-size: 20px; }
+  .runrow { padding: 2px 8px 2px; }
+  .rowhead h2 { font-size: 16px; }
+  .rowhead h2 small, .rowclock { font-size: 12px; }
+  .rowend { font-size: 12px; padding-top: 0; }
+  .pairs li { padding: 1px 0; line-height: 1.08; }
+  .runhint { font-size: 13px; animation: none; }
+  .btn-next { min-height: 80px; font-size: 24px; box-shadow: 0 4px 0 var(--rail-d); }
+}
 
 </style>
 </head>
@@ -912,7 +936,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       </section>
       <section class="runrow" id="runrow">
         <div class="rowhead"><h2>${rowLabel(ri)}<small>（この${info.codes.length - known}こで 1ぎょう）</small></h2><span class="rowclock">この行 <b id="rowclock">0:00</b></span></div>
-        <ol class="pairs" id="pairs" data-maxs="${Math.max(...info.codes.filter(k => mark(c, k) !== 'known').map(k => Math.max(plain(PAIR[k].q).length, plain(ans(PAIR[k])).length)))}" data-maxc="${Math.max(...info.codes.filter(k => mark(c, k) !== 'known').map(k => plain(PAIR[k].q).length + plain(ans(PAIR[k])).length + 1))}">${lines}</ol>
+        <ol class="pairs ${hide ? 'hidemode' : ''}" id="pairs" data-maxs="${Math.max(...info.codes.filter(k => mark(c, k) !== 'known').map(k => Math.max(plain(PAIR[k].q).length, plain(ans(PAIR[k])).length)))}" data-maxc="${Math.max(...info.codes.filter(k => mark(c, k) !== 'known').map(k => plain(PAIR[k].q).length + (hide ? 4.5 : plain(ans(PAIR[k])).length) + 1))}">${lines}</ol>
         <p class="rowend">ここまで${known ? `（言える ${known}こ は とばす）` : ''}</p>
         <div id="burst" class="burst" aria-live="polite"></div>
       </section>
@@ -927,7 +951,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     if (!box || !list) return;
     const n = Math.max(list.children.length, 4);
     const maxC = +(list.dataset.maxc || 8), maxS = +(list.dataset.maxs || 5);
-    const stack = maxC > 12;           // 長い答え（三大〇〇など）は 問い／答え を2段にする
+    const stack = maxC > 12 && !list.classList.contains('hidemode');   // 長い答え（三大〇〇など）は 問い／答え を2段に。かくして のときは札が短いので1段
     list.classList.toggle('stack', stack);
     box.style.setProperty('--fs', '20px');
     const head = box.querySelector('.rowhead').offsetHeight + box.querySelector('.rowend').offsetHeight + 16;
@@ -936,10 +960,11 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     const byH = stack ? (availH / n - 10) / 2.9 : (availH / n - 6) / 1.62;
     const byW = (availW - 16) / ((stack ? maxS : maxC) + 3.6);
     let fs = Math.max(20, Math.min(44, byH, byW));
-    const set = v => { box.style.setProperty('--fs', v.toFixed(1) + 'px'); box.style.setProperty('--rt', Math.max(12, v * 0.44).toFixed(1) + 'px'); };
+    const set = v => { box.style.setProperty('--fs', v.toFixed(1) + 'px'); box.style.setProperty('--rt', Math.max(13, v * 0.44).toFixed(1) + 'px'); };
     set(fs);
     // 見積もりで入らなければ、入るまで小さくする（最小16px）。それでも入らなければ「↓ まだ あるよ」を出す
-    while (list.scrollHeight > list.clientHeight + 1 && fs > 16) { fs -= 1; set(fs); }
+    const wide = () => [...list.children].some(li => li.scrollWidth > li.clientWidth + 1);   // ふりがなが長いと漢字より広くなるので実測
+    while ((list.scrollHeight > list.clientHeight + 1 || wide()) && fs > 16) { fs -= 1; set(fs); }
     box.classList.toggle('overflow', list.scrollHeight > list.clientHeight + 1);
   }
   window.addEventListener('resize', () => { if (ui.screen === 'run') fitRun(); });
@@ -965,7 +990,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     if (!R) return;
     if (document.visibilityState === 'hidden' && R.since && R.phase === 'run') { pauseRun(); }   // 閉じていた間はタイマーを止める（D-19）
   });
-  window.addEventListener('pagehide', () => { if (R && R.phase === 'run') persistRun(); });
+  window.addEventListener('pagehide', () => { if (R && R.phase === 'run' && (R.since || R.elapsed > 0)) persistRun(); });   // 3・2・1 の前に閉じたら残さない
 
   let cd = null;   // 進行中のカウントダウン（裏に回ったら止めて、もどったら3からやり直す）
   function countdown(text, done) {
@@ -1357,7 +1382,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   function lapGraph(nRows) {     // 行数に合わせた周回の目盛り（1行なら0〜24、5行なら0〜6を0.2きざみ）
     if (nRows <= 1) return printGraph(12, 2, v => v * 2);
     if (nRows === 2) return printGraph(12, 2, v => v);
-    if (nRows === 3) return printGraph(8, 3, v => v);
+    if (nRows === 3) return printGraph(10, 2, v => v);
     return printGraph(6, nRows, v => v);
   }
   function printGraph(steps, sub, lab) {   // 横8（7日＋ふくしゅう）× 縦steps（subきざみの補助線）

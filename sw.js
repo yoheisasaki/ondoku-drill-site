@@ -1,5 +1,5 @@
 /* ぐるぐる音読 Service Worker：オフラインで開けるようにする。ページは「ネット優先・だめなら保存分」、ほかは「保存分優先」 */
-const CACHE = 'guruguru-d422ba02db';
+const CACHE = 'guruguru-ccc8e03d5a';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-180.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -14,7 +14,8 @@ self.addEventListener('fetch', e => {
   const isFont = /fonts\.(googleapis|gstatic)\.com$/.test(url.hostname);
   if (url.origin !== location.origin && !isFont) return;
   if (req.mode === 'navigate') {
-    const isApp = /\/(index\.html)?$/.test(url.pathname);   // アプリ本体のときだけ保存する（404 や PDF は保存しない）
+    const base = new URL('./', self.registration.scope).pathname;
+    const isApp = url.pathname === base || url.pathname === base + 'index.html';   // アプリ本体のときだけ保存する（404 や PDF は保存しない）
     e.respondWith(fetch(req).then(r => {
       if (isApp && r.ok && (r.headers.get('content-type') || '').includes('text/html')) { const cp = r.clone(); caches.open(CACHE).then(c => c.put('./index.html', cp)); }
       return r;
