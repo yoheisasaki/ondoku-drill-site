@@ -579,7 +579,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   }
   function lastTimes() {
     const m = {};
-    S.sessions.forEach(s => s.rows.forEach(r => { if (!r.long) m[r.key] = r.ms; }));
+    S.sessions.forEach(s => s.rows.forEach(r => { if (bestable(r)) m[r.key] = r.ms; }));
     return m;
   }
   const sec = ms => (ms / 1000).toFixed(1);
@@ -588,7 +588,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     { r: 1.25, name: 'でんしゃ', icon: '🚃' }, { r: 1.4, name: 'しんかんせん', icon: '🚄' },
     { r: 1.6, name: 'ロケット', icon: '🚀' }
   ];
-  function titleFor(c) {   // 同じ条件の最初の公式記録を基準に、公式の最高周回数の伸び（モード別）
+  function titleRaw(c) {   // 同じ条件の最初の公式記録を基準に、公式の最高周回数の伸び（モード別）
     if (!c) return null;
     let best = null;
     ['look', 'hide'].forEach(mode => {
@@ -603,7 +603,14 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       if (!best || TITLES.indexOf(t) > TITLES.indexOf(best.t)) best = { t, ratio, mode };
     });
     return best;
+  }  function titleFor(c) {   // 一度とった称号は、しるしを付け直しても下げない
+    if (!c) return null;
+    const t = titleRaw(c);
+    const keep = c.titleMax != null ? TITLES[c.titleMax] : null;
+    if (t && (c.titleMax == null || TITLES.indexOf(t.t) > c.titleMax)) { c.titleMax = TITLES.indexOf(t.t); save(); return t; }
+    return keep ? { t: keep } : t;
   }
+
   function dayBest(c, mode, day, official) {
     const ss = sessionsOf(c).filter(s => s.mode === mode && s.day === day && !!s.official === official);
     return ss.length ? ss.reduce((a, s) => (lapsOf(s) > lapsOf(a) ? s : a)) : null;
@@ -669,7 +676,9 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     const f = SCREENS[ui.screen] || SCREENS.home;
     try { app.innerHTML = f(); }
     catch (e) {   // 画面が作れないときは、とちゅうの記録をあきらめてホームへ（真っ白にしない）
-      console.error(e); S.inProgress = null; R = null; save(); ui.screen = 'home'; app.innerHTML = SCREENS.home();
+      console.error(e);
+      if (['run', 'resume', 'who'].includes(ui.screen)) { S.inProgress = null; R = null; save(); }
+      ui.screen = 'home'; try { app.innerHTML = SCREENS.home(); } catch (e2) { app.innerHTML = '<p>画面を作れませんでした。おうちの人に見せてね。</p>'; }
     }
     app.className = 'screen-' + ui.screen;
     if (ui.screen === 'run') { fitRun(); startTicker(); }
@@ -951,20 +960,26 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   async function lockScreen() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { } }
   function unlockScreen() { try { wakeLock && wakeLock.release(); } catch (e) { } wakeLock = null; }
   document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && cd && cd.waiting) { const c2 = cd; cd = null; countdown(c2.text, c2.done); return; }
     if (!R) return;
     if (document.visibilityState === 'hidden' && R.since && R.phase === 'run') { pauseRun(); }   // 閉じていた間はタイマーを止める（D-19）
   });
   window.addEventListener('pagehide', () => { if (R && R.phase === 'run') persistRun(); });
 
+  let cd = null;   // 進行中のカウントダウン（裏に回ったら止めて、もどったら3からやり直す）
   function countdown(text, done) {
+    if (cd) clearInterval(cd.iv);
+    cd = { text, done, iv: 0 };
     go('countdown', { cdText: text });
+    if (document.visibilityState === 'hidden') { cd.waiting = true; return; }
     let n = 3;
     SND.count();
-    const iv = setInterval(() => {
+    cd.iv = setInterval(() => {
+      if (document.visibilityState === 'hidden') { clearInterval(cd.iv); cd.waiting = true; return; }
       n--;
       const e = document.getElementById('cd');
       if (n > 0) { if (e) e.textContent = n; SND.count(); return; }
-      clearInterval(iv); SND.go(); done();
+      clearInterval(cd.iv); const f = cd.done; cd = null; SND.go(); f();
     }, 800);
   }
   function beginRun(mode) {
@@ -994,7 +1009,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     }
     R.lastTap = now;
     const rec = { row: ri, ms, load: info.load, sig: info.sig, key: rowKey(R.mode, info), peeks: R.curPeeks.slice(), long: ms > info.load * LONG_MS };
-    const prevToday = [...R.rows].reverse().find(x => x.key === rec.key && !x.long);
+    const prevToday = [...R.rows].reverse().find(x => x.key === rec.key && bestable(x));
     const ref = prevToday ? prevToday.ms : lastTimes()[rec.key];
     R.rows.push(rec);
     R.lapStart = t; R.curPeeks = [];
@@ -1020,7 +1035,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     sparks(16);
   }
   function showPause() {
-    const more = R && el() >= PARTIAL_MIN;
+    const more = R && el() >= PARTIAL_MIN && R.rows.length > 0;
     showOverlay(`<h2>おやすみ中</h2><p>タイマーは 止まっているよ。<br>つづきは いまの 行の はじめから。</p>
       <div class="actions">${btn('unpause', '▶ つづける', 'btn-main')}${btn('quit', more ? 'ここで おわる（れんしゅうに のこす）' : 'やめる（のこさない）')}</div>`);
   }
@@ -1323,7 +1338,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
         return `<td><span class="pno">${k}</span><span class="pq">${rb(p.q)}</span><span class="pa ${withAns ? '' : 'blank'}">${withAns ? rb(ans(p)) : ''}</span><span class="pmk"><i>□言える</i><i>☆にがて</i></span></td>`;
       }).join('') + '</tr>').join('') + '</tbody></table>';
     const recRow = label => `<tr><th>${label}</th><td class="date">　/</td><td class="pk">みながら<br>かくして</td><td class="pk">こうしき<br>れんしゅう</td>
-      <td class="laps">${rows.length >= 3 ? `<span class="circ">${'<i></i>'.repeat(8)}</span>` : '<span class="tally">正の字で かぞえる：</span>'}<span class="lt">しゅう　　ぎょう</span></td><td class="ta">びょう</td><td class="ten">/10</td><td class="sign"></td></tr>`;
+      <td class="laps">${rows.length >= 3 ? `<span class="circ">${'<i></i>'.repeat(rows.length === 3 ? 10 : 8)}</span>` : '<span class="tally">正の字で かぞえる：</span>'}<span class="lt">しゅう　　ぎょう</span></td><td class="ta">びょう</td><td class="ten">/10</td><td class="sign"></td></tr>`;
     const recRows = Array.from({ length: DAYS }, (_, i) => recRow(`${i + 1}日め`)).join('') + recRow('ふくしゅう');
     const tokyo = S.settings.tokyo === 'shinjuku' ? '新宿区（地図帳では「東京」）' : '東京（都庁は新宿区）';
     return `
@@ -1537,7 +1552,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     reset: () => {
       if (!confirm('記録を全部消します。よろしいですか？')) return;
       if (!confirm('もう一度確認します。本当に全部消しますか？（元に戻せません）')) return;
-      S = fresh(); save(); R = null; go('home');
+      S = fresh(); useDs(S.settings.ds); save(); R = null; go('home');
     }
   };
 
@@ -1564,7 +1579,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       const s = JSON.parse(t);
       if (!s || s.version !== 1 || !Array.isArray(s.sessions) || !Array.isArray(s.cycles)) throw new Error('bad');
       if (!confirm(`記録を読み込みます（${s.sessions.length}回分）。いまの記録は置き換わります。よろしいですか？`)) return;
-      S = normalize(Object.assign(fresh(), s)); S.inProgress = null; save(); toast('読み込みました'); go('parent');
+      S = normalize(Object.assign(fresh(), s)); S.inProgress = null; useDs(S.settings.ds); save(); toast('読み込みました'); go('parent');
     }).catch(() => toast('読み込めませんでした（このアプリの書き出しファイルを選んでください）'));
   });
 
