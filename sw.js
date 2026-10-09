@@ -1,5 +1,5 @@
 /* ぐるぐる音読 Service Worker：オフラインで開けるようにする。ページは「ネット優先・だめなら保存分」、ほかは「保存分優先」 */
-const CACHE = 'guruguru-b20f122884';
+const CACHE = 'guruguru-d6c9aa66b8';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-180.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
