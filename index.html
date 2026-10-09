@@ -936,7 +936,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       </section>
       <section class="runrow" id="runrow">
         <div class="rowhead"><h2>${rowLabel(ri)}<small>（この${info.codes.length - known}こで 1ぎょう）</small></h2><span class="rowclock">この行 <b id="rowclock">0:00</b></span></div>
-        <ol class="pairs ${hide ? 'hidemode' : ''}" id="pairs" data-maxs="${Math.max(...info.codes.filter(k => mark(c, k) !== 'known').map(k => Math.max(plain(PAIR[k].q).length, plain(ans(PAIR[k])).length)))}" data-maxc="${Math.max(...info.codes.filter(k => mark(c, k) !== 'known').map(k => plain(PAIR[k].q).length + (hide ? 4.5 : plain(ans(PAIR[k])).length) + 1))}">${lines}</ol>
+        <ol class="pairs ${hide ? 'hidemode' : ''}" id="pairs" data-maxs="${Math.max(...info.codes.filter(k => mark(c, k) !== 'known').map(k => Math.max(plain(PAIR[k].q).length, plain(ans(PAIR[k])).length)))}" data-maxc="${Math.max(...info.codes.filter(k => mark(c, k) !== 'known').map(k => plain(PAIR[k].q).length + plain(ans(PAIR[k])).length + 1))}">${lines}</ol>
         <p class="rowend">ここまで${known ? `（言える ${known}こ は とばす）` : ''}</p>
         <div id="burst" class="burst" aria-live="polite"></div>
       </section>
@@ -951,7 +951,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     if (!box || !list) return;
     const n = Math.max(list.children.length, 4);
     const maxC = +(list.dataset.maxc || 8), maxS = +(list.dataset.maxs || 5);
-    const stack = maxC > 12 && !list.classList.contains('hidemode');   // 長い答え（三大〇〇など）は 問い／答え を2段に。かくして のときは札が短いので1段
+    const stack = maxC > 12;   // 長い答え（三大〇〇など）は 問い／答え を2段に。かくして も同じ（のぞいたとき答えが全部見えるように。幅も答えの長さで見積もる）
     list.classList.toggle('stack', stack);
     box.style.setProperty('--fs', '20px');
     const head = box.querySelector('.rowhead').offsetHeight + box.querySelector('.rowend').offsetHeight + 16;
@@ -965,6 +965,9 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     // 見積もりで入らなければ、入るまで小さくする（最小16px）。それでも入らなければ「↓ まだ あるよ」を出す
     const wide = () => [...list.children].some(li => li.scrollWidth > li.clientWidth + 1);   // ふりがなが長いと漢字より広くなるので実測
     while ((list.scrollHeight > list.clientHeight + 1 || wide()) && fs > 16) { fs -= 1; set(fs); }
+    // 低い画面で入らないときは、はじめてのヒント（ボタンの文字と同じ中身）をしまって場所をあける
+    const tip = document.querySelector('.runhint');
+    if (tip && list.scrollHeight > list.clientHeight + 1) { tip.hidden = true; fs = Math.max(20, Math.min(44, byH, byW)); set(fs); while ((list.scrollHeight > list.clientHeight + 1 || wide()) && fs > 16) { fs -= 1; set(fs); } }
     box.classList.toggle('overflow', list.scrollHeight > list.clientHeight + 1);
   }
   window.addEventListener('resize', () => { if (ui.screen === 'run') fitRun(); });
