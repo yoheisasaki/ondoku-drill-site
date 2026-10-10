@@ -183,6 +183,10 @@ ruby rt { font-family: var(--ud); font-weight: 400; ruby-align: center; }
 .loop li.done { background: var(--rail); border-color: var(--rail); color: #fff; }
 .loop li.done + li::before, .loop li.done + li.done::before { background: var(--rail); }
 .loop li.here { background: var(--signal); border-color: var(--ink); color: var(--ink); transform: scale(1.12); }
+.runhead > * { min-width: 0; }
+.loop.many li { width: 24px; height: 24px; font-size: 12px; }   /* 駅が6つ以上（1行5ペアの表）は 小さく。D-79 */
+.loop.many li + li { margin-left: 10px; }
+.loop.many li + li::before { width: 10px; }
 .lapno { grid-area: lap; margin: 0; font-family: var(--round); font-weight: 700; font-size: 16px; white-space: nowrap; }
 .lapno b { font-size: 26px; color: var(--rail); }
 .lapno.pop b { display: inline-block; animation: pop .5s ease-out; }
@@ -449,6 +453,9 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   .loop li { width: 24px; height: 24px; font-size: 12px; }
   .loop li + li { margin-left: 10px; }
   .loop li + li::before { width: 10px; }
+  .loop.many li { width: 20px; height: 20px; font-size: 11px; border-width: 2px; }
+  .loop.many li + li { margin-left: 5px; }
+  .loop.many li + li::before { width: 5px; }
   .lapno { font-size: 13px; }
   .lapno b { font-size: 20px; }
   .runrow { padding: 2px 8px 2px; }
@@ -1541,7 +1548,7 @@ const PICS = {
         <div class="clock"><small>のこり</small><span id="clock">${clock(R.dur - el())}</span></div>
         <div class="modechip ${hide ? 'hide' : ''}">${hide ? 'かくして' : '見ながら'}</div>
         <button type="button" class="pause" data-act="pause" aria-label="一時ていし"><span>Ⅱ</span></button>
-        <ol class="loop" aria-label="${lap}しゅうめ">${stations}</ol>
+        <ol class="loop ${R.act.length > 5 ? 'many' : ''}" aria-label="${lap}しゅうめ">${stations}</ol>
         <p class="lapno" id="lapno"><b>${lap}</b>しゅうめ</p>
       </section>
       <section class="runrow" id="runrow">
@@ -2060,7 +2067,7 @@ const PICS = {
       if (el.dataset.c === '47' || JMAP.prefs[el.dataset.c].r !== r) return;
       const b = el.getBBox(); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height);
     });
-    const m = 30; x0 -= m; y0 -= m; x1 += m; y1 += m;
+    const m = 18; x0 -= m; y0 -= m; x1 += m; y1 += m;
     const ar = JMAP.w / JMAP.h, w = x1 - x0, h = y1 - y0;   // 地図と同じ縦横比に
     if (w / h > ar) { const nh = w / ar; y0 -= (nh - h) / 2; return `${x0} ${y0} ${w} ${nh}`; }
     const nw = h * ar; x0 -= (nw - w) / 2; return `${x0} ${y0} ${nw} ${h}`;
