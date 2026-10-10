@@ -460,8 +460,11 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
    設計：docs/DESIGN.md v2 ／ 決定：DECISIONS.md */
 (function () {
   const KEY = 'ondoku.v1';
-  const DUR = 10 * 60 * 1000;     // 1日10分
-  const PARTIAL_MIN = 5 * 60 * 1000; // 途中やめでも練習として残す長さ
+  const MINUTES = [3, 5, 10];     // 1回の時間（おうちの人が選ぶ。はじめは5分。D-69）
+  const OLD_MIN = 10;             // 時間を選べるようになる前の記録は10分
+  const durMs = () => S.settings.minutes * 60 * 1000;
+  const minOf = s => s.min || OLD_MIN;
+  const partialOK = r => r.elapsed >= (r.dur || OLD_MIN * 60000) / 2 && r.rows.length > 0;   // 途中やめでも、半分以上やったら練習として残す
   const PER_ROW = 10;             // 1行=10ペア
   const DEBOUNCE = 600;           // 二度押しの吸収
   const FAST_MS = 1000;           // 読み量1あたりこれより速いタップは受け付けない
@@ -488,13 +491,14 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   function fresh() {
     return {
       version: 1,
-      settings: { level: 'kids', tokyo: 'tokyo', sound: true, reward: '', rewardDays: 5, seenIntro: false, seenRunHint: false, seenPeekHint: false, ds: '', iken: false },
+      settings: { level: 'kids', tokyo: 'tokyo', sound: true, reward: '', rewardDays: 5, seenIntro: false, seenRunHint: false, seenPeekHint: false, ds: '', iken: false, minutes: 5 },
       cycles: [], sessions: [], rewardShown: [], inProgress: null
     };
   }
   function normalize(s) {
     const f = fresh();
     s.settings = Object.assign(f.settings, s.settings || {});
+    if (!MINUTES.includes(s.settings.minutes)) s.settings.minutes = 5;
     s.cycles = s.cycles || []; s.sessions = s.sessions || []; s.rewardShown = s.rewardShown || [];
     s.cycles.forEach(c => { c.marks = c.marks || {}; c.notYet = c.notYet || []; });
     if (s.inProgress && !s.cycles.some(c => c.id === s.inProgress.cycleId)) s.inProgress = null;
@@ -512,7 +516,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   let storageOK = true;
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(S)); storageOK = true; return true; }
-    catch (e) { storageOK = false; toast('きろくを ほぞんできなかったよ。おうちの人に 見せてね'); return false; }
+    catch (e) { storageOK = false; toast('記ろくを ほぞんできなかったよ。おうちの人に 見せてね'); return false; }
   }
   let persisted = null;
   try {
@@ -537,7 +541,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   const dsTitle = d => `<span class="dst">${esc((d || DS).title)}</span><span class="dsk">${esc((d || DS).title_kana || '')}</span>`;
   function tokyoNote(p) {
     if (DS.id !== 'prefectures' || p.code !== '13') return '';
-    return S.settings.tokyo === 'shinjuku' ? '<small class="note">地図帳では「東京」</small>' : '<small class="note">都庁は 新宿区</small>';
+    return S.settings.tokyo === 'shinjuku' ? '<small class="note">地図帳では「東京」</small>' : '<small class="note">都ちょうは 新宿区</small>';
   }
 
   /* ---------- サイクルと表 ---------- */
@@ -569,16 +573,16 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   const sessionsOf = c => S.sessions.filter(s => s.cycleId === c.id);
   const daysOf = c => uniq(sessionsOf(c).map(s => s.day)).sort();
   function dayNumber(c) { const d = daysOf(c); return d.includes(today()) ? d.indexOf(today()) + 1 : d.length + 1; }
-  const rowLabel = i => `${i + 1}ぎょうめ`;
+  const rowLabel = i => `${i + 1}行め`;
   function rowArea(codes) { return `${plain(PAIR[codes[0]].q)}〜${plain(PAIR[codes[codes.length - 1]].q)}`; }
 
   /* ---------- 記録の計算 ---------- */
   const lapsOf = s => s.activeRows ? s.rowsDone / s.activeRows : 0;
   function lapsText(rowsDone, act) {
-    if (!act) return '0ぎょう';
+    if (!act) return '0行';
     const full = Math.floor(rowsDone / act), rest = rowsDone % act;
-    if (!full) return `${rest}ぎょう`;
-    return `${full}しゅう` + (rest ? ` と ${rest}ぎょう` : '');
+    if (!full) return `${rest}行`;
+    return `${full}しゅう` + (rest ? ` と ${rest}行` : '');
   }
   function avg10(s) {   // 合計ms×10÷合計読み量（長すぎる行は除く）
     const r = s.rows.filter(x => !x.long);
@@ -609,8 +613,8 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   }
   const sec = ms => (ms / 1000).toFixed(1);
   const TITLES = [
-    { r: 0, name: 'あるき', icon: '🚶' }, { r: 1.1, name: 'じてんしゃ', icon: '🚲' },
-    { r: 1.25, name: 'でんしゃ', icon: '🚃' }, { r: 1.4, name: 'しんかんせん', icon: '🚄' },
+    { r: 0, name: '歩き', icon: '🚶' }, { r: 1.1, name: '自転車', icon: '🚲' },
+    { r: 1.25, name: '電車', icon: '🚃' }, { r: 1.4, name: '新かん線', icon: '🚄' },
     { r: 1.6, name: 'ロケット', icon: '🚀' }
   ];
   function titleRaw(c) {   // 同じ条件の最初の公式記録を基準に、公式の最高周回数の伸び（モード別）
@@ -619,8 +623,8 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     ['look', 'hide'].forEach(mode => {
       const off = sessionsOf(c).filter(s => s.mode === mode && s.official && !s.partial);
       if (!off.length) return;
-      const sig = off[off.length - 1].tableSig;
-      const g = off.filter(s => s.tableSig === sig);
+      const sig = off[off.length - 1].tableSig, mn = minOf(off[off.length - 1]);   // 時間がちがう回は くらべない
+      const g = off.filter(s => s.tableSig === sig && minOf(s) === mn);
       const base = lapsOf(g[0]);
       if (!base) return;
       const ratio = Math.max(...g.map(lapsOf)) / base;
@@ -636,15 +640,15 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     return keep ? { t: keep } : t;
   }
 
-  function dayBest(c, mode, day, official) {
-    const ss = sessionsOf(c).filter(s => s.mode === mode && s.day === day && !!s.official === official);
+  function dayBest(c, mode, day, official, min) {
+    const ss = sessionsOf(c).filter(s => s.mode === mode && s.day === day && !!s.official === official && minOf(s) === min);
     return ss.length ? ss.reduce((a, s) => (lapsOf(s) > lapsOf(a) ? s : a)) : null;
   }
   function suggestHide(c) {   // 4日め以降 かつ 見ながらの周回数が前の日以上
     if (!c || c.kind !== 'main' || dayNumber(c) < 4) return false;
     const days = daysOf(c).filter(d => d !== today());
     const v = days.map(d => {
-      const ss = sessionsOf(c).filter(s => s.mode === 'look' && s.day === d);
+      const ss = sessionsOf(c).filter(s => s.mode === 'look' && s.day === d && minOf(s) === S.settings.minutes);
       return ss.length ? Math.max(...ss.map(lapsOf)) : null;
     }).filter(x => x !== null);
     return v.length >= 2 ? v[v.length - 1] >= v[v.length - 2] : v.length >= 1;
@@ -713,7 +717,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     }
   }
   function rerenderKeepScroll() { const y = window.scrollY; render(); window.scrollTo(0, y); }
-  const SCREEN_NAMES = { home: 'ホーム', pick: '表をえらぶ', intro: 'やりかた', check: '言えるチェック', mode: 'モードえらび', who: 'だれとやった？', result: 'けっか', weak: 'にがて', graph: 'グラフ', table: '表を見る', parent: 'おうちの人', resume: 'とちゅうから' };
+  const SCREEN_NAMES = { home: 'ホーム', pick: '表をえらぶ', intro: 'やり方', check: '言えるチェック', mode: 'モードえらび', who: 'だれとやった？', result: 'けっか', weak: '苦手', graph: 'グラフ', table: '表を見る', parent: 'おうちの人', resume: 'と中から' };
   let toastTimer = 0;
   function toast(msg) {
     const t = document.getElementById('toast');
@@ -738,7 +742,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       const isToday = (d && d === today()) || (!d && i === days.length && !days.includes(today()));
       h += `<li class="st ${d ? (off ? 'off' : 'prac') : ''} ${isToday ? 'now' : ''}">
         <span class="dot">${d ? (off ? hanamaru() : '<b>✓</b>') : (i + 1)}</span>
-        <span class="lbl">${d ? (d === today() ? 'きょう' : md(d)) : (isToday ? 'きょう' : '')}</span></li>`;
+        <span class="lbl">${d ? (d === today() ? '今日' : md(d)) : (isToday ? '今日' : '')}</span></li>`;
     }
     return h + '</ol>';
   }
@@ -753,10 +757,10 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     if (!c) {
       body = `
         <section class="hero">
-          <p class="lead">きょうから <b>7日間</b>。<br>1日 <b>10分</b>、声に出して<br>はやく 言うだけ。</p>
+          <p class="lead">今日から <b>7日間</b>。<br>1日 <b>${S.settings.minutes}分</b>、声に 出して<br>速く 言うだけ。</p>
           <div class="sample">${rb(PAIR[ALL[0]].q)}・${rb(PAIR[ALL[0]].a)}・${rb(PAIR[ALL[0]].q)}・${rb(PAIR[ALL[0]].a)}</div>
         </section>
-        <div class="actions">${btn('start', '▶ はじめる', 'btn-main')}<div class="row2">${btn('table', '表を見る')}</div></div>`;
+        <div class="actions">${btn('start', '▶ 始める', 'btn-main')}<div class="row2">${btn('table', '表を見る')}</div></div>`;
     } else if (c.kind === 'main' && !c.finishedAt) {
       const dn = dayNumber(c), doneToday = daysOf(c).includes(today());
       const ss = sessionsOf(c), last = ss[ss.length - 1];
@@ -764,14 +768,14 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       const od = officialDays(c), need = S.settings.rewardDays;
       body = `
         ${rail(c)}
-        <p class="daynote">${doneToday ? 'きょうの 10分は おわったよ！<br>もう1回 やっても いいよ' : `きょうは <b>${dn}日め</b>`}</p>
+        <p class="daynote">${doneToday ? '今日の 音読は 終わったよ！<br>もう1回 やっても いいよ' : `今日は <b>${dn}日め</b>`}</p>
         <dl class="mini">
-          ${last ? `<div><dt>まえの きろく</dt><dd>${lapsText(last.rowsDone, last.activeRows)} <span class="tag ${last.official ? 'tag-off' : ''}">${last.official ? 'こうしき' : 'れんしゅう'}</span></dd></div>` : ''}
-          <div><dt>しょうごう</dt><dd>${t ? `${t.t.icon} ${t.t.name}` : '<span class="muted">こうしき きろくで きまるよ</span>'}</dd></div>
-          <div><dt>ごほうびまで</dt><dd>${S.rewardShown.includes(c.id) ? 'ゲット！' : `こうしきの日 <b>${od}</b> / ${need}`}</dd></div>
+          ${last ? `<div><dt>前の 記ろく</dt><dd>${lapsText(last.rowsDone, last.activeRows)}<small>（${minOf(last)}分）</small> <span class="tag ${last.official ? 'tag-off' : ''}">${last.official ? '公式' : '練習'}</span></dd></div>` : ''}
+          <div><dt>しょう号</dt><dd>${t ? `${t.t.icon} ${t.t.name}` : '<span class="muted">公式 記ろくで 決まるよ</span>'}</dd></div>
+          <div><dt>ごほうびまで</dt><dd>${S.rewardShown.includes(c.id) ? 'ゲット！' : `公式の日 <b>${od}</b> / ${need}`}</dd></div>
         </dl>
         <div class="actions">
-          ${btn('start', doneToday ? '▶ もう1回（10分）' : '▶ はじめる（10分）', doneToday ? 'btn-main btn-quiet' : 'btn-main')}
+          ${btn('start', doneToday ? `▶ もう1回（${S.settings.minutes}分）` : `▶ 始める（${S.settings.minutes}分）`, doneToday ? 'btn-main btn-quiet' : 'btn-main')}
           <div class="row2">${btn('graph', 'グラフ')}${btn('table', '表を見る')}</div>
         </div>`;
     } else if (c.kind === 'main') {
@@ -782,29 +786,29 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
         <section class="clear">
           <h2>7日 クリア！</h2>
           ${S.rewardShown.includes(c.id) ? `<p class="reward">ごほうび：<b>${esc(S.settings.reward || 'おうちの人に 見せよう！')}</b></p>` : ''}
-          <p>ふくしゅうは <b>${md(from)}〜${md(to)}</b> ごろ。<br>にがてを 中心に 10分。</p>
-          ${due ? '' : `<p class="muted">いまは ${md(from)} まで おやすみ。わすれたころに やると よく おぼえるよ。</p>`}
+          <p>ふく習は <b>${md(from)}〜${md(to)}</b> ごろ。<br>苦手を 中心に ${S.settings.minutes}分。</p>
+          ${due ? '' : `<p class="muted">今は ${md(from)} まで お休み。わすれたころに やると よく おぼえるよ。</p>`}
         </section>
         <div class="actions">
-          ${btn('review', due ? '▶ ふくしゅう（10分）' : 'ふくしゅうを はやめに やる', due ? 'btn-main' : 'btn-sub')}
+          ${btn('review', due ? `▶ ふく習（${S.settings.minutes}分）` : 'ふく習を 早めに やる', due ? 'btn-main' : 'btn-sub')}
           <div class="row2">${btn('graph', 'グラフ')}${btn('again', 'もう1回 7日間')}</div>
         </div>`;
     } else {
       const ss = sessionsOf(c);
       body = `
         <section class="clear">
-          <h2>${ss.length ? 'ふくしゅう できた！' : 'ふくしゅう'}</h2>
-          <p>にがてだった ものを 中心に <b>${c.pairCodes.length}こ</b>。${ss.length ? `<br>${ss.length}回 やったよ。` : ''}</p>
+          <h2>${ss.length ? 'ふく習 できた！' : 'ふく習'}</h2>
+          <p>苦手だった ものを 中心に <b>${c.pairCodes.length}こ</b>。${ss.length ? `<br>${ss.length}回 やったよ。` : ''}</p>
         </section>
         <div class="actions">
-          ${btn('start', ss.length ? '▶ もう1回 ふくしゅう' : '▶ ふくしゅう（10分）', ss.length ? 'btn-main btn-quiet' : 'btn-main')}
-          <div class="row2">${btn('graph', 'グラフ')}${btn('again', 'あたらしく 7日間')}</div>
+          ${btn('start', ss.length ? '▶ もう1回 ふく習' : `▶ ふく習（${S.settings.minutes}分）`, ss.length ? 'btn-main btn-quiet' : 'btn-main')}
+          <div class="row2">${btn('graph', 'グラフ')}${btn('again', '新しく 7日間')}</div>
         </div>`;
     }
     return `
       <header class="top">
         <div><h1 class="brand">ぐるぐる音読</h1><button type="button" class="dspick" data-act="pick" aria-label="表を かえる">${dsTitle()}<span class="chg">表を かえる</span></button></div>
-        <button type="button" class="parent" data-hold="parent" aria-label="おうちの人の画面（2秒長押し）"><span>おうちの人</span><i></i></button>
+        <button type="button" class="parent" data-hold="parent" aria-label="おうちの人の画面（2秒 長おし）"><span>おうちの人</span><i></i></button>
       </header>
       <main class="home">${body}</main>`;
   };
@@ -815,12 +819,12 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       let st = 'まだ';
       if (c) {
         const days = uniq(S.sessions.filter(s => s.cycleId === c.id).map(s => s.day)).length;
-        st = c.kind === 'review' ? 'ふくしゅう' : c.finishedAt ? '7日 クリア' : `${days}日め まで`;
+        st = c.kind === 'review' ? 'ふく習' : c.finishedAt ? '7日 クリア' : `${days}日め まで`;
       }
       return `<button type="button" class="pickitem ${id === DS.id ? 'on' : ''}" data-act="pickDs" data-id="${id}">
         ${dsTitle(d)}<span class="pmeta">${d.pairs.length}こ ・ ${st}</span></button>`;
     }).join('');
-    return `<header class="bar"><h2>どの 表を やる？</h2><p class="hint">表ごとに 7日間 まわすよ。</p></header>
+    return `<header class="bar"><h2>どの 表を やる？</h2><p class="hint">表ごとに 7日間 回すよ。</p></header>
       <main class="pick">${items}</main>
       <footer class="dock">${btn('home', 'もどる', 'btn-sub')}</footer>`;
   };
@@ -829,8 +833,8 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     const r = S.inProgress;
     const who = r.phase === 'who';
     return `<main class="center">
-      <h2>とちゅうの きろくが あるよ</h2>
-      <p>${who ? '10分 おわっていたよ。だれと やったか えらぼう。' : `のこり ${clock(DUR - r.elapsed)} の ところで 止まっているよ。<br>つづきは、いまの 行の はじめから。`}</p>
+      <h2>と中の 記ろくが あるよ</h2>
+      <p>${who ? '音読は 終わって いたよ。だれと やったか えらぼう。' : `のこり ${clock((r.dur || OLD_MIN * 60000) - r.elapsed)} の ところで 止まって いるよ。<br>つづきは、今の 行の 始めから。`}</p>
       <div class="actions">${btn('resume', who ? 'えらぶ' : '▶ つづける', 'btn-main')}${who ? '' : btn('discard', 'やめる')}</div>
     </main>`;
   };
@@ -838,21 +842,21 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   const INTRO = [
     () => `<h2>2回 つづけて 言う</h2>
       <div class="sample big">${rb(PAIR[ALL[0]].q)}・${rb(PAIR[ALL[0]].a)}<br>${rb(PAIR[ALL[0]].q)}・${rb(PAIR[ALL[0]].a)}</div>
-      <p>言えたら すぐ つぎの ペアへ。</p>`,
+      <p>言えたら すぐ 次の ペアへ。</p>`,
     () => `<h2>1行 言えたら ボタン</h2>
-      <p>1行は 10ペア。<br>さいごまで 言えたら、下の 大きい ボタンを おす。</p>
-      <div class="fake-btn">言えた！ つぎの行 ▶</div>`,
-    () => `<h2>10分で おわり</h2>
-      <p>おぼえなくて いい。<br><b>はやく 言う</b> ことだけ がんばろう。<br>はやく 言えるほど おぼえているよ。</p>`,
-    () => `<h2>よみかたは 🔈で</h2>
-      <p>よめない 字が あったら、<br>ホームの「表を見る」で 🔈を おすと<br>よみかたが 聞けるよ。</p>`
+      <p>1行は 10ペア。<br>さい後まで 言えたら、下の 大きい ボタンを おす。</p>
+      <div class="fake-btn">言えた！ 次の行 ▶</div>`,
+    () => `<h2>${S.settings.minutes}分で 終わり</h2>
+      <p>おぼえなくて いい。<br><b>速く 言う</b> ことだけ がんばろう。<br>速く 言えるほど おぼえて いるよ。</p>`,
+    () => `<h2>読み方は 🔈で</h2>
+      <p>読めない 字が あったら、<br>ホームの「表を見る」で 🔈を おすと<br>読み方が 聞けるよ。</p>`
   ];
   SCREENS.intro = function () {
     const i = ui.step || 0, last = i === INTRO.length - 1;
     return `<main class="center intro">
       <p class="step">${i + 1} / ${INTRO.length}</p>
       ${INTRO[i]()}
-      <div class="actions">${btn(last ? 'introDone' : 'introNext', last ? 'わかった！' : 'つぎ', 'btn-main')}</div>
+      <div class="actions">${btn(last ? 'introDone' : 'introNext', last ? '分かった！' : '次', 'btn-main')}</div>
     </main>`;
   };
 
@@ -885,17 +889,17 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   SCREENS.mode = function () {
     const c = cur(), rec = suggestHide(c);
     return `<main class="center">
-      ${c.kind === 'review' ? '<p class="tagline">ふくしゅう</p>' : ''}
+      ${c.kind === 'review' ? '<p class="tagline">ふく習</p>' : ''}
       <h2>どっちで やる？</h2>
       <div class="modes">
-        <button type="button" class="mode-btn" data-act="mode" data-mode="look"><b>みながら</b><small>答えを 見て 言う</small></button>
+        <button type="button" class="mode-btn" data-act="mode" data-mode="look"><b>見ながら</b><small>答えを 見て 言う</small></button>
         <button type="button" class="mode-btn ${rec ? 'rec' : ''}" data-act="mode" data-mode="hide"><b>かくして</b><small>答えを かくして 言う</small>${rec ? '<i>おすすめ</i>' : ''}</button>
       </div>
       <div class="actions">${btn('home', 'もどる')}</div>
     </main>`;
   };
 
-  /* ---------- 10分の音読 ---------- */
+  /* ---------- 音読（3・5・10分） ---------- */
   let R = null;
   function el() { return R.elapsed + (R.since ? Date.now() - R.since : 0); }
   function clock(ms) { ms = Math.max(0, ms); const s = Math.ceil(ms / 1000); return `${Math.floor(s / 60)}:${pad(s % 60)}`; }
@@ -928,21 +932,21 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     else if (hide && !S.settings.seenPeekHint) hint = '<p class="runhint">出ないときは ？に タッチして 見る</p>';
     return `
       <section class="runhead">
-        <div class="clock"><small>のこり</small><span id="clock">${clock(DUR - el())}</span></div>
-        <div class="modechip ${hide ? 'hide' : ''}">${hide ? 'かくして' : 'みながら'}</div>
-        <button type="button" class="pause" data-act="pause" aria-label="いちじていし"><span>Ⅱ</span></button>
+        <div class="clock"><small>のこり</small><span id="clock">${clock(R.dur - el())}</span></div>
+        <div class="modechip ${hide ? 'hide' : ''}">${hide ? 'かくして' : '見ながら'}</div>
+        <button type="button" class="pause" data-act="pause" aria-label="一時ていし"><span>Ⅱ</span></button>
         <ol class="loop" aria-label="${lap}しゅうめ">${stations}</ol>
         <p class="lapno" id="lapno"><b>${lap}</b>しゅうめ</p>
       </section>
       <section class="runrow" id="runrow">
-        <div class="rowhead"><h2>${rowLabel(ri)}<small>（この${info.codes.length - known}こで 1ぎょう）</small></h2><span class="rowclock">この行 <b id="rowclock">0:00</b></span></div>
+        <div class="rowhead"><h2>${rowLabel(ri)}<small>（この${info.codes.length - known}こで 1行）</small></h2><span class="rowclock">この行 <b id="rowclock">0:00</b></span></div>
         <ol class="pairs ${hide ? 'hidemode' : ''}" id="pairs" data-maxs="${Math.max(...info.codes.filter(k => mark(c, k) !== 'known').map(k => Math.max(plain(PAIR[k].q).length, plain(ans(PAIR[k])).length)))}" data-maxc="${Math.max(...info.codes.filter(k => mark(c, k) !== 'known').map(k => plain(PAIR[k].q).length + plain(ans(PAIR[k])).length + 1))}">${lines}</ol>
         <p class="rowend">ここまで${known ? `（言える ${known}こ は とばす）` : ''}</p>
         <div id="burst" class="burst" aria-live="polite"></div>
       </section>
       <section class="rundock">
         ${hint}
-        <button type="button" class="btn-next" id="next" data-act="next">言えた！ つぎの行 ▶</button>
+        <button type="button" class="btn-next" id="next" data-act="next">言えた！ 次の行 ▶</button>
       </section>`;
   };
   // 1行が画面に入るように文字の大きさを決める
@@ -978,10 +982,10 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       if (!R || ui.screen !== 'run') return;
       const t = el();
       const ck = document.getElementById('clock'), rc = document.getElementById('rowclock');
-      if (ck) ck.textContent = clock(DUR - t);
+      if (ck) ck.textContent = clock(R.dur - t);
       if (rc) { const s = Math.max(0, Math.floor((t - R.lapStart) / 1000)); rc.textContent = `${Math.floor(s / 60)}:${pad(s % 60)}`; }
       if (R.since && ++saveTick % 10 === 0) persistRun();
-      if (t >= DUR) finishRun();
+      if (t >= R.dur) finishRun();
     }, 200);
   }
   function stopTicker() { clearInterval(ticker); }
@@ -1014,10 +1018,10 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   function beginRun(mode) {
     const c = cur();
     const act = activeRows(c);
-    if (!act.length) { toast('ぜんぶ「言える」に なっているよ。おうちの人に 見なおしてもらおう'); return go('home'); }
-    R = { id: uid(), cycleId: c.id, mode, day: today(), startedAt: new Date().toISOString(), elapsed: 0, since: null, lapStart: 0,
+    if (!act.length) { toast('全部「言える」に なって いるよ。おうちの人に 見直して もらおう'); return go('home'); }
+    R = { id: uid(), cycleId: c.id, mode, dur: durMs(), day: today(), startedAt: new Date().toISOString(), elapsed: 0, since: null, lapStart: 0,
       rowPos: 0, act, tableSig: tableSig(c, mode, act), rows: [], peeks: [], curPeeks: [], phase: 'run', lastTap: 0, pausedMs: 0 };
-    countdown(`${mode === 'hide' ? 'かくして' : 'みながら'}・2回 つづけて はやく！`, () => {
+    countdown(`${mode === 'hide' ? 'かくして' : '見ながら'}・2回 つづけて 速く！`, () => {
       R.since = Date.now(); R.lastTap = Date.now();
       lockScreen(); persistRun(); go('run');
     });
@@ -1027,13 +1031,13 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     const now = Date.now();
     if (now - R.lastTap < DEBOUNCE) return;
     const t = el();
-    if (t >= DUR) return finishRun();
+    if (t >= R.dur) return finishRun();
     const c = cycleById(R.cycleId);
     const ri = R.act[R.rowPos], info = rowInfo(c, ri);
     const ms = t - R.lapStart;
     if (ms < info.load * FAST_MS) {    // 速すぎ：受け付けない
       R.lastTap = now;
-      burst('はやすぎ！ 2回ずつ 言ってね', 'bad'); SND.nope();
+      burst('速すぎ！ 2回ずつ 言ってね', 'bad'); SND.nope();
       return;
     }
     R.lastTap = now;
@@ -1048,7 +1052,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     render();
     const lapDone = R.rowPos === 0;
     const faster = ref && rec.ms < ref;
-    burst(faster ? `−${sec(ref - rec.ms)}びょう！` : `${sec(rec.ms)}びょう`, faster ? 'good' : '');
+    burst(faster ? `−${sec(ref - rec.ms)}秒！` : `${sec(rec.ms)}秒`, faster ? 'good' : '');
     if (lapDone) { SND.lap(); popLap(); } else if (faster) SND.faster(); else SND.tap();
   }
   function burst(text, kind) {
@@ -1064,9 +1068,9 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     sparks(16);
   }
   function showPause() {
-    const more = R && el() >= PARTIAL_MIN && R.rows.length > 0;
-    showOverlay(`<h2>おやすみ中</h2><p>タイマーは 止まっているよ。<br>つづきは いまの 行の はじめから。</p>
-      <div class="actions">${btn('unpause', '▶ つづける', 'btn-main')}${btn('quit', more ? 'ここで おわる（れんしゅうに のこす）' : 'やめる（のこさない）')}</div>`);
+    const more = R && partialOK(Object.assign({}, R, { elapsed: el() }));
+    showOverlay(`<h2>お休み中</h2><p>タイマーは 止まって いるよ。<br>つづきは 今の 行の 始めから。</p>
+      <div class="actions">${btn('unpause', '▶ つづける', 'btn-main')}${btn('quit', more ? 'ここで 終わる（練習に のこす）' : 'やめる（のこさない）')}</div>`);
   }
   function pauseRun() {
     if (!R || !R.since) return;
@@ -1077,14 +1081,14 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     hideOverlay();
     if (!R) return;
     R.pausedMs = (R.pausedMs || 0) + (R.pauseAt ? Date.now() - R.pauseAt : 0);
-    countdown('いまの 行の はじめから', () => {
+    countdown('今の 行の 始めから', () => {
       R.since = Date.now(); R.lapStart = R.elapsed; R.curPeeks = []; R.lastTap = Date.now();
       lockScreen(); persistRun(); go('run');
     });
   }
   function finishRun() {
     if (!R || R.phase !== 'run') return;
-    R.elapsed = DUR; R.since = null; R.phase = 'who';
+    R.elapsed = R.dur; R.since = null; R.phase = 'who';
     stopTicker(); unlockScreen(); SND.end();
     persistRun();
     go('who');
@@ -1092,13 +1096,13 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
 
   SCREENS.who = function () {
     return `<main class="center who">
-      <p class="end">おわり！</p>
+      <p class="end">終わり！</p>
       <p class="big">${lapsText(R.rows.length, R.act.length)}</p>
-      <p class="hint">言いかけの 行は かぞえないよ。</p>
-      <h2>きょうは だれと やった？</h2>
+      <p class="hint">言いかけの 行は 数えないよ。</p>
+      <h2>今日は だれと やった？</h2>
       <div class="actions">
-        <button type="button" class="btn-main who-off" data-act="who" data-off="1"><b>おうちの人が 聞いてた</b><small>こうしき きろく・メダルが もらえる</small></button>
-        <button type="button" class="btn-sub who-prac" data-act="who" data-off="0"><b>ひとりで</b><small>れんしゅう きろく</small></button>
+        <button type="button" class="btn-main who-off" data-act="who" data-off="1"><b>おうちの人が 聞いてた</b><small>公式 記ろく・メダルが もらえる</small></button>
+        <button type="button" class="btn-sub who-prac" data-act="who" data-off="0"><b>一人で</b><small>練習 記ろく</small></button>
       </div>
     </main>`;
   };
@@ -1106,7 +1110,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   function commitSession(official, partial) {
     const c = cycleById(R.cycleId);
     const s = { id: R.id, cycleId: R.cycleId, day: R.day, startedAt: R.startedAt, mode: R.mode, official: !!official && !partial, partial: !!partial,
-      durationMs: partial ? R.elapsed : DUR, pausedMs: R.pausedMs || 0, tableSig: R.tableSig,
+      durationMs: partial ? R.elapsed : R.dur, min: R.dur / 60000, pausedMs: R.pausedMs || 0, tableSig: R.tableSig,
       rows: R.rows, rowsDone: R.rows.length, activeRows: R.act.length, peeks: uniq(R.peeks) };
     const prevBest = bests();
     const newBests = [], firsts = [];
@@ -1152,30 +1156,30 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       const nb = newBests.some(x => x.r.key === r.key);
       const pk = r.peeks && r.peeks.length;
       const diff = p ? r.ms - p : null;
-      return `<li class="${nb ? 'nb' : ''}"><span>${rowLabel(+i)}</span><b>${sec(r.ms)}<small>びょう</small></b>
-        <em>${nb ? 'ベスト！' : pk ? 'のぞいた' : diff === null ? 'はじめて' : diff < 0 ? `▲${sec(-diff)} はやい` : `${sec(diff)} おそい`}</em></li>`;
+      return `<li class="${nb ? 'nb' : ''}"><span>${rowLabel(+i)}</span><b>${sec(r.ms)}<small>秒</small></b>
+        <em>${nb ? 'ベスト！' : pk ? 'のぞいた' : diff === null ? 'はじめて' : diff < 0 ? `▲${sec(-diff)} 速い` : `${sec(diff)} おそい`}</em></li>`;
     }).join('');
-    const stamp = s.partial ? `<div class="stamp prac"><b>✓</b><span>とちゅう</span></div>`
-      : s.official ? `<div class="stamp off">${hanamaru('big')}<span>こうしき</span></div>` : `<div class="stamp prac"><b>✓</b><span>れんしゅう</span></div>`;
+    const stamp = s.partial ? `<div class="stamp prac"><b>✓</b><span>と中</span></div>`
+      : s.official ? `<div class="stamp off">${hanamaru('big')}<span>公式</span></div>` : `<div class="stamp prac"><b>✓</b><span>練習</span></div>`;
     let msg = '';
-    if (s.partial) msg = 'とちゅうまで できたね。れんしゅうに のこしたよ。';
-    else if (!s.official) msg = '10分 できたね！ グラフに のこったよ。';
-    else if (!best && firsts.length) msg = 'こうしき きろく たんじょう！ つぎは これより はやく。';
+    if (s.partial) msg = 'と中まで できたね。練習に のこしたよ。';
+    else if (!s.official) msg = `${minOf(s)}分 できたね！ グラフに のこったよ。`;
+    else if (!best && firsts.length) msg = '公式 記ろく たん生！ 次は これより 速く。';
     // にがて こうほ
     let cand = [];
     if (c.kind === 'main') cand = uniq([...s.peeks, ...(c.notYet || [])]).filter(k => mark(c, k) !== 'known' && c.pairCodes.includes(k));
     return `<main class="result">
-      ${best ? `<div class="medal"><svg viewBox="0 0 60 64" aria-hidden="true"><path d="M17 2h11l6 18H23zM43 2H32l-6 18h11z" fill="var(--answer)"/><circle cx="30" cy="42" r="20" fill="var(--gold)"/><circle cx="30" cy="42" r="14.5" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/><path d="M30 33l2.9 6 6.5.7-4.9 4.4 1.4 6.4L30 47.3l-5.9 3.2 1.4-6.4-4.9-4.4 6.5-.7z" fill="#fff" opacity=".9"/></svg><b>じこベスト こうしん！</b></div>` : ''}
-      ${cleared ? '<div class="banner">7日 クリア！ ふくしゅうは 2〜3週間後</div>' : ''}
+      ${best ? `<div class="medal"><svg viewBox="0 0 60 64" aria-hidden="true"><path d="M17 2h11l6 18H23zM43 2H32l-6 18h11z" fill="var(--answer)"/><circle cx="30" cy="42" r="20" fill="var(--gold)"/><circle cx="30" cy="42" r="14.5" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/><path d="M30 33l2.9 6 6.5.7-4.9 4.4 1.4 6.4L30 47.3l-5.9 3.2 1.4-6.4-4.9-4.4 6.5-.7z" fill="#fff" opacity=".9"/></svg><b>自分の 新ベスト！</b></div>` : ''}
+      ${cleared ? '<div class="banner">7日 クリア！ ふく習は 2〜3週間後</div>' : ''}
       ${rewardNow ? `<div class="banner gold">ごほうび ゲット！ ${esc(S.settings.reward || 'おうちの人に 見せよう！')}</div>` : ''}
       <div class="res-top">${stamp}
-        <div><p class="label">きょうの しゅうかい</p><p class="big">${lapsText(s.rowsDone, s.activeRows)}</p>
-        ${grow ? `<p class="label">いちばん のびた 行</p><p class="mid">${rowLabel(grow.r.row)} ▲${sec(grow.d)}びょう</p>` : ''}</div>
+        <div><p class="label">今日の しゅう回</p><p class="big">${lapsText(s.rowsDone, s.activeRows)}</p>
+        ${grow ? `<p class="label">一番 のびた 行</p><p class="mid">${rowLabel(grow.r.row)} ▲${sec(grow.d)}秒</p>` : ''}</div>
       </div>
       ${msg ? `<p class="hint">${msg}</p>` : ''}
       ${rows ? `<ol class="rowtimes">${rows}</ol>` : '<p class="hint">1行も 言いきれなかったよ。1行 言えたら ボタンを おそう。</p>'}
-      <figure class="chart small"><figcaption>しゅうかいの グラフ（${s.mode === 'hide' ? 'かくして' : 'みながら'}）</figcaption>${barChart(c, s.mode, s.day)}</figure>
-      ${cand.length ? `<section class="cands"><h3>にがて こうほ <small>タッチで ★（4回 言う）。1行 ${WEAK_MAX}こ まで</small></h3><div class="tiles">${cand.map(k => weakTile(c, k)).join('')}</div></section>` : ''}
+      <figure class="chart small"><figcaption>しゅう回の グラフ（${s.mode === 'hide' ? 'かくして' : '見ながら'}・${minOf(s)}分）</figcaption>${barChart(c, s.mode, s.day, minOf(s))}</figure>
+      ${cand.length ? `<section class="cands"><h3>苦手 こうほ <small>タッチで ★（4回 言う）。1行 ${WEAK_MAX}こ まで</small></h3><div class="tiles">${cand.map(k => weakTile(c, k)).join('')}</div></section>` : ''}
       <div class="actions">
         ${btn('home', 'ホームへ', 'btn-main')}
         <div class="row2">${btn('graph', 'くわしい グラフ')}</div>
@@ -1190,7 +1194,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       const list = codes.filter(k => mark(c, k) !== 'known');
       if (list.length) h += `<h3>${rowLabel(i)}</h3><div class="tiles">` + list.map(k => weakTile(c, k)).join('') + '</div>';
     });
-    return `<header class="bar"><h2>にがてに ★</h2><p class="hint">★の ペアは 4回 言うよ（2セット）。1行に ${WEAK_MAX}こ まで。</p></header>
+    return `<header class="bar"><h2>苦手に ★</h2><p class="hint">★の ペアは 4回 言うよ（2セット）。1行に ${WEAK_MAX}こ まで。</p></header>
       <main class="check">${h}</main>
       <footer class="dock">${btn('parent', 'これで OK', 'btn-main')}</footer>`;
   };
@@ -1201,13 +1205,13 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   }
 
   /* ---------- グラフ ---------- */
-  function dayItems(c, mode) {   // 日ごとに 公式いちばん・練習いちばん
+  function dayItems(c, mode, min) {   // 日ごとに 公式いちばん・練習いちばん（同じ時間の回だけ）
     const days = daysOf(c);
     const items = [];
     let lastSig = null;
     days.forEach((d, di) => {
       [true, false].forEach(off => {
-        const s = dayBest(c, mode, d, off);
+        const s = dayBest(c, mode, d, off, min);
         if (!s) return;
         const sep = lastSig !== null && s.tableSig !== lastSig;
         lastSig = s.tableSig;
@@ -1216,9 +1220,9 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     });
     return items;
   }
-  function barChart(c, mode, hiDay) {
-    const items = dayItems(c, mode);
-    if (!items.length) return '<p class="empty">まだ きろくが ないよ</p>';
+  function barChart(c, mode, hiDay, min) {
+    const items = dayItems(c, mode, min);
+    if (!items.length) return '<p class="empty">まだ 記ろくが ないよ</p>';
     const W = 340, H = 196, L = 30, B = 32, T = 22;
     const max = Math.max(2, Math.ceil(Math.max(...items.map(x => lapsOf(x.s))) + 0.4));
     const slots = Math.max(items.length, 7), slot = (W - L - 6) / slots, bw = Math.min(28, slot * 0.7);
@@ -1237,8 +1241,8 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       if (it.label !== lastLabel) g += `<text x="${x + bw / 2}" y="${H - 12}" class="ax" text-anchor="middle">${it.label}</text>`;
       lastLabel = it.label;
     });
-    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="しゅうかいの ぼうグラフ">${g}</svg>
-      <p class="legend"><span class="lg off"></span>こうしき <span class="lg prac"></span>れんしゅう <span class="lg-star">★</span>こうしきの いちばん</p>`;
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="しゅう回の ぼうグラフ">${g}</svg>
+      <p class="legend"><span class="lg off"></span>公式 <span class="lg prac"></span>練習 <span class="lg-star">★</span>公式の 一番</p>`;
   }
   function lineChart(c, mode) {
     const days = daysOf(c);
@@ -1263,32 +1267,36 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       g += `<text x="${p.x}" y="${y(p.v) - 9}" class="val" text-anchor="middle">${p.v.toFixed(0)}</text>`;
       g += `<text x="${p.x}" y="${H - 12}" class="ax" text-anchor="middle">${p.label}</text>`;
     });
-    g += `<text x="${L - 6}" y="${T - 4}" class="ax" text-anchor="end">びょう</text>`;
-    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="10ペアあたりの タイムの おれせんグラフ">${g}</svg>`;
+    g += `<text x="${L - 6}" y="${T - 4}" class="ax" text-anchor="end">秒</text>`;
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="10ペアあたりの タイムの おれ線グラフ">${g}</svg>`;
   }
   SCREENS.graph = function () {
     const c = (ui.graphCycle && cycleById(ui.graphCycle)) || cur();
     const mode = ui.graphMode || 'look';
     const tabs = `<div class="tabs" role="tablist">
-      <button type="button" role="tab" aria-selected="${mode === 'look'}" data-act="gmode" data-mode="look">みながら</button>
+      <button type="button" role="tab" aria-selected="${mode === 'look'}" data-act="gmode" data-mode="look">見ながら</button>
       <button type="button" role="tab" aria-selected="${mode === 'hide'}" data-act="gmode" data-mode="hide">かくして</button></div>`;
     let mainN = 0;
     const cyc = cyclesOfDs().length > 1 ? `<div class="cycpick">${cyclesOfDs().map(x => {
       if (x.kind === 'main') mainN++;
-      return `<button type="button" data-act="gcycle" data-id="${x.id}" class="${x === c ? 'on' : ''}">${x.kind === 'review' ? 'ふくしゅう' : `${mainN}かいめの 7日`}</button>`;
+      return `<button type="button" data-act="gcycle" data-id="${x.id}" class="${x === c ? 'on' : ''}">${x.kind === 'review' ? 'ふく習' : `${mainN}回めの 7日`}</button>`;
     }).join('')}</div>` : '';
     let body;
     const ss = c ? sessionsOf(c).filter(s => s.mode === mode) : [];
-    if (!ss.length) body = `<p class="empty">${mode === 'hide' ? '「かくして」の きろくは まだ ないよ。' : 'まだ きろくが ないよ。'}</p>`;
+    // 時間（3・5・10分）ごとに分けて くらべる。2つ以上あるときだけ 切りかえを出す
+    const mins = uniq(ss.map(minOf)).sort((a, b) => a - b);
+    const gmin = mins.includes(ui.graphMin) ? ui.graphMin : ss.length ? minOf(ss[ss.length - 1]) : S.settings.minutes;
+    const mtabs = mins.length > 1 ? `<div class="tabs mins" role="tablist">${mins.map(m => `<button type="button" role="tab" aria-selected="${m === gmin}" data-act="gmin" data-v="${m}">${m}分</button>`).join('')}</div>` : '';
+    if (!ss.length) body = `<p class="empty">${mode === 'hide' ? '「かくして」の 記ろくは まだ ないよ。' : 'まだ 記ろくが ないよ。'}</p>`;
     else {
-      const items = dayItems(c, mode);
+      const items = dayItems(c, mode, gmin);
       const first = items[0], lastI = items[items.length - 1];
       const same = first.s.tableSig === lastI.s.tableSig;
       const gain = lapsOf(lastI.s) - lapsOf(first.s);
       body = `
-        <figure class="chart"><figcaption>しゅうかい（たかいほど はやい）</figcaption>${barChart(c, mode)}</figure>
-        <p class="gain">${items.length > 1 && same ? (gain > 0.04 ? `はじめより <b>${gain.toFixed(1)}しゅう</b> ふえたよ！` : 'つづけると グラフが のびるよ。') : 'あしたの きろくと くらべよう。'}</p>
-        ${ui.showTime ? `<figure class="chart"><figcaption>10ペアあたりの タイム（ひくいほど はやい）</figcaption>${lineChart(c, mode)}</figure>` : ''}
+        ${mtabs}<figure class="chart"><figcaption>しゅう回・${gmin}分（高いほど 速い）</figcaption>${barChart(c, mode, null, gmin)}</figure>
+        <p class="gain">${items.length > 1 && same ? (gain > 0.04 ? `はじめより <b>${gain.toFixed(1)}しゅう</b> ふえたよ！` : 'つづけると グラフが のびるよ。') : 'あしたの 記ろくと くらべよう。'}</p>
+        ${ui.showTime ? `<figure class="chart"><figcaption>10ペアあたりの タイム（ひくいほど 速い）</figcaption>${lineChart(c, mode)}</figure>` : ''}
         <div class="row2">${btn('gtime', ui.showTime ? 'タイムを とじる' : 'タイムも 見る')}</div>`;
     }
     return `<header class="bar"><h2>グラフ</h2>${cyc}${tabs}</header><main class="graph">${body}</main>
@@ -1303,9 +1311,9 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       return `<li class="${m === 'known' ? 'known' : ''} ${m === 'weak' ? 'weak' : ''}">
         <span class="q">${rb(p.q)}</span><span class="sep">・</span><span class="a">${rb(ans(p))}${tokyoNote(p)}</span>
         <span class="mk">${m === 'known' ? '<i class="ok">言える</i>' : m === 'weak' ? '<i class="star">★</i>' : ''}</span>
-        ${canSpeak ? `<button type="button" class="say" data-act="say" data-code="${k}" aria-label="${esc(plain(p.q))}の よみかたを 聞く">🔈</button>` : ''}</li>`;
+        ${canSpeak ? `<button type="button" class="say" data-act="say" data-code="${k}" aria-label="${esc(plain(p.q))}の 読み方を 聞く">🔈</button>` : ''}</li>`;
     }).join('') + '</ol>').join('');
-    return `<header class="bar"><h2>表を 見る</h2><p class="hint">🔈で よみかたを たしかめられるよ。<br>10分の あいだは 自分の 声で 言おう。</p></header>
+    return `<header class="bar"><h2>表を 見る</h2><p class="hint">🔈で 読み方を たしかめられるよ。<br>音読の 間は 自分の 声で 言おう。</p></header>
       <main class="table">${h}</main><footer class="dock">${btn('home', 'ホームへ', 'btn-main')}</footer>`;
   };
 
@@ -1318,11 +1326,14 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     return `<header class="bar"><h2>おうちの人へ</h2></header>
     <main class="parentp">
       <section><h3>使い方（30秒）</h3>
-        <ol class="howto"><li>1日10分。問いと答えを <b>2回つづけて</b> 声に出し、1行（10ペア）言えたら大きいボタン。</li>
-        <li>終わったら「おうちの人が聞いてた」か「ひとりで」を選びます。<b>自己ベストの演出・メダル・称号・ごほうびは「聞いてた」だけ</b>です。聞いてあげる日を作ってください。</li>
-        <li>練習した日が7日になったら1サイクル終わり。2〜3週間後に「ふくしゅう」が出ます。</li>
+        <ol class="howto"><li>1日${st.minutes}分（下で3・5・10分から選べます）。問いと答えを <b>2回つづけて</b> 声に出し、1行（10ペア）言えたら大きいボタン。</li>
+        <li>終わったら「おうちの人が聞いてた」か「一人で」を選びます。<b>自己ベストの演出・メダル・称号・ごほうびは「聞いてた」だけ</b>です。聞いてあげる日を作ってください。</li>
+        <li>練習した日が7日になったら1サイクル終わり。2〜3週間後に「ふく習」が出ます。</li>
         <li>覚えさせようとしなくて大丈夫です。速く言えること＝覚えていること、です。</li>
-        <li>効果を見るには、1日め・7日め・ふくしゅうの日に、順番を変えて10問聞いてみてください（印刷3ページめに欄があります）。</li></ol></section>
+        <li>効果を見るには、1日め・7日め・ふく習の日に、順番を変えて10問聞いてみてください（印刷3ページめに欄があります）。</li></ol></section>
+      <section><h3>1回の時間</h3>
+        <div class="seg">${MINUTES.map(v => `<button type="button" data-act="mins" data-v="${v}" aria-pressed="${st.minutes === v}">${v}分</button>`).join('')}</div>
+        <p class="small">はじめは5分がおすすめです。慣れて、公式の日が続くようになったら10分に。周回数のグラフと称号は時間ごとに分けて比べます（行のタイムの自己ベストは共通）。</p></section>
       <section><h3>ごほうび</h3>
         <label class="lbl">子どもに見せる文<input type="text" id="reward" maxlength="40" value="${esc(st.reward)}" placeholder="例：日曜に 公園で キャッチボール"></label>
         <p class="small">出る条件：このサイクルで「聞いてた」の日が</p>
@@ -1336,7 +1347,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
         <p class="small">いまの表はどれも50ペア以下なので、どちらでも同じです。</p></section>
       <section><h3>音</h3>
         <div class="seg">${[[true, 'あり'], [false, 'なし']].map(([v, l]) => `<button type="button" data-act="sound" data-v="${v}" aria-pressed="${st.sound === v}">${l}</button>`).join('')}</div></section>
-      ${c && c.kind === 'main' ? `<section><h3>しるしの付け直し</h3><div class="row2">${btn('remark', '「言える」を直す')}${btn('weak', '「にがて★」を直す')}</div>
+      ${c && c.kind === 'main' ? `<section><h3>しるしの付け直し</h3><div class="row2">${btn('remark', '「言える」を直す')}${btn('weak', '「苦手★」を直す')}</div>
         <p class="small">しるしを変えた行は、自己ベストを新しく数えます。</p></section>` : ''}
       <section><h3>印刷（A4よこ・3ページ）</h3>${btn('print', '印刷する')}
         <p class="small">1枚め＝表、2枚め＝答えのない表（かくし読み用）、3枚め＝記録とグラフ。答えは朱色なので赤シートでも隠せます（白黒印刷なら2枚めを使ってください）。</p></section>
@@ -1356,30 +1367,30 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   function printHTML() {
     const rows = [];
     for (let i = 0; i < ALL.length; i += PER_ROW) rows.push(ALL.slice(i, i + PER_ROW));
-    const head = (kind, sub) => `<header class="ph"><div class="pl"><b class="pbrand">ぐるぐる音読</b><span class="ptitle">${esc(DS.title)}</span><span class="pkind">${kind}</span></div><div class="pname">なまえ<span></span></div></header>${sub || ''}`;
+    const head = (kind, sub) => `<header class="ph"><div class="pl"><b class="pbrand">ぐるぐる音読</b><span class="ptitle">${esc(DS.title)}</span><span class="pkind">${kind}</span></div><div class="pname">名前<span></span></div></header>${sub || ''}`;
     const f0 = PAIR[ALL[0]], ex = `${plain(f0.q)}・${plain(ans(f0))}・${plain(f0.q)}・${plain(ans(f0))}`;
-    const howto = `<ol class="phow"><li><b>2回つづけて</b>言う：${ex}</li><li>1日<b>10分</b>、1行め→5行め→1行め…と回す</li><li>□に✓＝言える（とばす）／☆をぬる＝にがて（4回）</li><li>7日やったら、2〜3週間後にふくしゅう</li></ol>`;
+    const howto = `<ol class="phow"><li><b>2回つづけて</b>言う：${ex}</li><li>1日<b>${S.settings.minutes}分</b>、1行め→${rows.length}行め→1行め…と回す</li><li>□に✓＝言える（とばす）／☆をぬる＝苦手（4回）</li><li>7日やったら、2〜3週間後にふく習</li></ol>`;
     const grid = withAns => `<table class="pgrid ${rows.length <= 3 ? 'few' : ''}"><colgroup><col class="rh">${'<col>'.repeat(PER_ROW)}</colgroup><tbody>` + rows.map((rc, i) =>
-      `<tr><th><b>${i + 1}</b><small>ぎょう</small></th>` + Array.from({ length: PER_ROW }, (_, j) => {
+      `<tr><th><b>${i + 1}</b><small>行</small></th>` + Array.from({ length: PER_ROW }, (_, j) => {
         const k = rc[j];
         if (!k) return '<td class="none"></td>';
         const p = PAIR[k];
-        return `<td><span class="pno">${k}</span><span class="pq">${rb(p.q)}</span><span class="pa ${withAns ? '' : 'blank'}">${withAns ? rb(ans(p)) : ''}</span><span class="pmk"><i>□言える</i><i>☆にがて</i></span></td>`;
+        return `<td><span class="pno">${k}</span><span class="pq">${rb(p.q)}</span><span class="pa ${withAns ? '' : 'blank'}">${withAns ? rb(ans(p)) : ''}</span><span class="pmk"><i>□言える</i><i>☆苦手</i></span></td>`;
       }).join('') + '</tr>').join('') + '</tbody></table>';
-    const recRow = label => `<tr><th>${label}</th><td class="date">　/</td><td class="pk">みながら<br>かくして</td><td class="pk">こうしき<br>れんしゅう</td>
-      <td class="laps">${rows.length >= 3 ? `<span class="circ">${'<i></i>'.repeat(rows.length === 3 ? 10 : 8)}</span>` : '<span class="tally">正の字で かぞえる：</span>'}<span class="lt">しゅう　　ぎょう</span></td><td class="ta">びょう</td><td class="ten">/10</td><td class="sign"></td></tr>`;
-    const recRows = Array.from({ length: DAYS }, (_, i) => recRow(`${i + 1}日め`)).join('') + recRow('ふくしゅう');
-    const tokyo = S.settings.tokyo === 'shinjuku' ? '新宿区（地図帳では「東京」）' : '東京（都庁は新宿区）';
+    const recRow = label => `<tr><th>${label}</th><td class="date">　/</td><td class="pk">見ながら<br>かくして</td><td class="pk">公式<br>練習</td>
+      <td class="laps">${rows.length >= 3 ? `<span class="circ">${'<i></i>'.repeat(rows.length === 3 ? 10 : 8)}</span>` : '<span class="tally">正の字で 数える：</span>'}<span class="lt">しゅう　　行</span></td><td class="ta">秒</td><td class="ten">/10</td><td class="sign"></td></tr>`;
+    const recRows = Array.from({ length: DAYS }, (_, i) => recRow(`${i + 1}日め`)).join('') + recRow('ふく習');
+    const tokyo = S.settings.tokyo === 'shinjuku' ? '新宿区（地図帳では「東京」）' : '東京（都ちょうは新宿区）';
     return `
-      <section class="page">${head('表（みながら）')}${howto}${grid(true)}<p class="pfoot">答えは朱色：赤シートでかくせます。白黒印刷のときは2枚めでかくし読み。${DS.id === 'prefectures' ? `東京都の答え：${tokyo}` : ''}</p></section>
-      <section class="page">${head('表（かくし読み）', '<p class="psub">答えを見ないで言う。出なかったら1枚めで見て、2回言ってつぎへ。☆をぬる。</p>')}${grid(false)}</section>
-      <section class="page">${head('きろく と グラフ', '<p class="psub">ふくしゅうの日：　　月　　日ごろ（7日めの2〜3週間後）</p>')}
-        <table class="ptable"><thead><tr><th></th><th>日づけ</th><th>どっち？<br>（○）</th><th>だれと？<br>（○）</th><th>しゅうかい（1しゅうごとに${rows.length >= 3 ? '○をぬる' : '1画 書く'}）</th><th>タイムアタック<br>（1ぎょうめ）</th><th>たしかめ<br>10問</th><th>おうちの人の<br>サイン<br>（こうしきの日）</th></tr></thead><tbody>${recRows}</tbody></table>
+      <section class="page">${head('表（見ながら）')}${howto}${grid(true)}<p class="pfoot">答えは朱色：赤シートでかくせます。白黒印刷のときは2枚めでかくし読み。${DS.id === 'prefectures' ? `東京都の答え：${tokyo}` : ''}</p></section>
+      <section class="page">${head('表（かくし読み）', '<p class="psub">答えを見ないで言う。出なかったら1まいめで見て、2回言って次へ。☆をぬる。</p>')}${grid(false)}</section>
+      <section class="page">${head('記ろく と グラフ', '<p class="psub">ふく習の日：　　月　　日ごろ（7日めの2〜3週間後）</p>')}
+        <table class="ptable"><thead><tr><th></th><th>日づけ</th><th>どっち？<br>（○）</th><th>だれと？<br>（○）</th><th>しゅう回（1しゅうごとに${rows.length >= 3 ? '○をぬる' : '1画 書く'}）</th><th>タイムアタック<br>（1行め）</th><th>たしかめ<br>10問</th><th>おうちの人の<br>サイン<br>（公式の日）</th></tr></thead><tbody>${recRows}</tbody></table>
         <div class="pgraphs">
-          <figure><figcaption>しゅうかい（●みながら ▲かくして を打って線でつなぐ）</figcaption>${lapGraph(rows.length)}</figure>
-          <figure><figcaption>タイムアタック・1ぎょうめ（びょう）</figcaption>${printGraph(9, 2, v => v * 10)}</figure>
+          <figure><figcaption>しゅう回（●見ながら ▲かくして を打って線でつなぐ）</figcaption>${lapGraph(rows.length)}</figure>
+          <figure><figcaption>タイムアタック・1行め（秒）</figcaption>${printGraph(9, 2, v => v * 10)}</figure>
         </div>
-        <p class="pfoot">10分はキッチンタイマーで。タイムアタックは10分の前に「1ぎょうめ」を1回、ストップウォッチではかる。たしかめ10問は1日め・7日め・ふくしゅうの日に、おうちの人が順番を変えて聞く。公式（おうちの人が聞いてた）の日は、おうちの人がサイン。</p>
+        <p class="pfoot">${S.settings.minutes}分はキッチンタイマーで。タイムアタックは音読の前に「1行め」を1回、ストップウォッチではかる。たしかめ10問は1日め・7日め・ふく習の日に、おうちの人が順番を変えて聞く。公式（おうちの人が聞いてた）の日は、おうちの人がサイン。</p>
       </section>`;
   }
   function lapGraph(nRows) {     // 行数に合わせた周回の目盛り（1行なら0〜24、5行なら0〜6を0.2きざみ）
@@ -1394,7 +1405,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     for (let r = 0; r <= steps * sub; r++) { const yy = T + r * ch / sub; s += `<line x1="${L}" x2="${L + cw * 8}" y1="${yy}" y2="${yy}" class="${r % sub ? 'h' : 'm'}"/>`; }
     for (let c = 0; c <= 8; c++) s += `<line x1="${L + c * cw}" x2="${L + c * cw}" y1="${T}" y2="${T + ch * steps}" class="m"/>`;
     for (let v = 0; v <= steps; v++) s += `<text x="${L - 4}" y="${T + (steps - v) * ch + 3}" text-anchor="end">${lab(v)}</text>`;
-    for (let i = 0; i < 8; i++) s += `<text x="${L + i * cw + cw / 2}" y="${T + ch * steps + 12}" text-anchor="middle">${i < 7 ? (i + 1) + '日め' : 'ふくしゅう'}</text>`;
+    for (let i = 0; i < 8; i++) s += `<text x="${L + i * cw + cw / 2}" y="${T + ch * steps + 12}" text-anchor="middle">${i < 7 ? (i + 1) + '日め' : 'ふく習'}</text>`;
     return `<svg viewBox="0 0 ${W} ${H}" class="pgraph">${s}</svg>`;
   }
   function renderPrint() { document.getElementById('print').innerHTML = printHTML(); }
@@ -1486,8 +1497,8 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     unpause: () => unpause(),
     quit: () => {
       if (!R) return hideOverlay();
-      const keep = R.elapsed >= PARTIAL_MIN && R.rows.length > 0;
-      if (!confirm(keep ? 'ここで おわる？（れんしゅうに のこすよ）' : 'やめる？（きろくは のこらないよ）')) return;
+      const keep = partialOK(R);
+      if (!confirm(keep ? 'ここで 終わる？（練習に のこすよ）' : 'やめる？（記ろくは のこらないよ）')) return;
       hideOverlay();
       if (keep) return commitSession(false, true);
       R = null; S.inProgress = null; save(); go('home');
@@ -1511,8 +1522,8 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     },
     discard: () => {
       const r = S.inProgress;
-      const keep = r && r.elapsed >= PARTIAL_MIN && r.rows.length > 0;
-      if (!confirm(keep ? 'ここで おわる？（れんしゅうに のこすよ）' : 'やめる？（きろくは のこらないよ）')) return;
+      const keep = r && partialOK(r);
+      if (!confirm(keep ? 'ここで 終わる？（練習に のこすよ）' : 'やめる？（記ろくは のこらないよ）')) return;
       if (keep) { R = Object.assign({}, r); return commitSession(false, true); }
       S.inProgress = null; save(); R = null; go('home');
     },
@@ -1521,7 +1532,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
       if (c.marks[k] === 'weak') delete c.marks[k];
       else {
         const row = rowsOf(c).find(r => r.includes(k)) || [];
-        if (row.filter(x => c.marks[x] === 'weak').length >= WEAK_MAX) return toast(`1行に ${WEAK_MAX}こ まで。ほかの ★を はずしてね`);
+        if (row.filter(x => c.marks[x] === 'weak').length >= WEAK_MAX) return toast(`1行に ${WEAK_MAX}こ まで。他の ★を はずしてね`);
         c.marks[k] = 'weak';
       }
       save(); rerenderKeepScroll();
@@ -1531,8 +1542,9 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     pickDs: d => { S.settings.ds = d.id; useDs(d.id); save(); ui.result = null; go('home'); },
     ikenOff: d => { S.settings.iken = d.v === '1'; save(); rerenderKeepScroll(); },
     parent: () => go('parent'),
-    graph: () => go('graph', { graphCycle: ui.result ? ui.result.s.cycleId : null, graphMode: (ui.result && ui.result.s.mode) || ui.graphMode || 'look', result: null }),
+    graph: () => go('graph', { graphCycle: ui.result ? ui.result.s.cycleId : null, graphMode: (ui.result && ui.result.s.mode) || ui.graphMode || 'look', graphMin: ui.result ? minOf(ui.result.s) : null, result: null }),
     gmode: d => go('graph', { graphMode: d.mode }),
+    gmin: d => go('graph', { graphMin: +d.v }),
     gcycle: d => go('graph', { graphCycle: d.id }),
     gtime: () => { ui.showTime = !ui.showTime; rerenderKeepScroll(); },
     table: () => go('table'),
@@ -1570,6 +1582,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
     rdays: d => { S.settings.rewardDays = +d.v; save(); rerenderKeepScroll(); },
     tokyo: d => { S.settings.tokyo = d.v; save(); rerenderKeepScroll(); },
     level: d => { S.settings.level = d.v; save(); rerenderKeepScroll(); },
+    mins: d => { S.settings.minutes = +d.v; save(); rerenderKeepScroll(); },
     sound: d => { S.settings.sound = d.v === 'true'; save(); rerenderKeepScroll(); },
     print: () => { renderPrint(); setTimeout(() => window.print(), 60); },
     export: () => {
@@ -1643,7 +1656,7 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
   } else render();
 
   // テスト用（Playwright から使う）
-  window.__ondoku = { get state() { return S; }, get run() { return R; }, ui, DUR, render, fitRun };
+  window.__ondoku = { get state() { return S; }, get run() { return R; }, ui, durMs, render, fitRun };
 })();
 
 </script>
