@@ -506,6 +506,58 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
 .mapbtn { margin-top: 10px; width: 100%; }
 .quizend .big { margin: 4px 0; }
 
+/* ---- 相ぼう・なかま（D-85） ---- */
+.critter { width: 100%; height: 100%; display: block; }
+.petcard { display: flex; align-items: center; gap: 12px; background: var(--sheet); border: 2px solid var(--ink); border-radius: 12px; padding: 10px 14px; }
+.petcard.empty { flex-direction: column; text-align: center; gap: 6px; }
+.petcard.empty p { margin: 0; }
+.pets3 { display: flex; gap: 6px; }
+.pets3 .critter { width: 64px; height: 64px; }
+.petpic { width: 92px; height: 92px; flex: none; animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .petpic { animation: none; } }
+.petinfo { flex: 1; min-width: 0; }
+.petname { margin: 0; font-family: var(--round); font-weight: 700; font-size: 20px; }
+.petname span { font-size: 15px; color: var(--answer); margin-left: 4px; }
+.petbar { height: 12px; border-radius: 6px; background: var(--paper-2); border: 1.5px solid var(--ink); overflow: hidden; margin: 6px 0 2px; }
+.petbar i { display: block; height: 100%; background: var(--rail); }
+.petnext { margin: 0; font-size: 15px; color: var(--ink-2); }
+.petnext b { color: var(--answer); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+.stats div { background: var(--sheet); border: 2px solid var(--ink); border-radius: 10px; text-align: center; padding: 6px 2px; }
+.stats span { display: block; font-size: 13px; color: var(--ink-2); }
+.stats b { font-family: var(--round); font-size: 26px; line-height: 1.2; }
+.stats small { font-size: 14px; margin-left: 1px; }
+.weekcard { background: var(--sheet); border: 2px solid var(--rail); border-radius: 12px; padding: 10px 12px 4px; text-align: center; }
+.wk-t { margin: 0; font-size: 14px; color: var(--ink-2); }
+.wk-name { margin: 0; font-family: var(--round); font-weight: 700; font-size: 19px; }
+.wk-d { margin: 2px 0 0; font-size: 17px; color: var(--ink-2); }
+.wk-d b { font-family: var(--round); font-size: 34px; color: var(--rail); }
+.weekcard .rail { margin-top: 8px; }
+.weekcard .daynote { font-size: 16px; margin: 8px 0; }
+.pickrow { margin-top: 12px; }
+.petpick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 16px; }
+.petopt { background: var(--sheet); border: 2px solid var(--ink); border-radius: 12px; padding: 8px 4px; font: inherit; color: var(--ink); cursor: pointer; }
+.petopt b { display: block; font-family: var(--round); }
+.moncard { text-align: center; }
+.moncard .critter { width: 96px; height: 96px; margin: 0 auto; }
+.moncard p { margin: 0; }
+.mn { font-family: var(--round); font-weight: 700; font-size: 18px; }
+.ms { color: var(--gold); letter-spacing: 1px; }
+.ms i { font-style: normal; opacity: .25; }
+.mp b { font-family: var(--round); font-size: 20px; }
+.moncard.super .critter { filter: drop-shadow(0 0 8px var(--signal)); }
+.monget { margin: 10px auto; padding: 10px 16px; border: 2px solid var(--gold); border-radius: 12px; background: var(--sheet); }
+.wow { font-family: var(--round); font-weight: 700; font-size: 22px; color: var(--answer); margin: 4px 0 0; }
+.monlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; padding: 16px; }
+.monlist > div { background: var(--sheet); border: 2px solid var(--ink); border-radius: 12px; padding: 8px; text-align: center; }
+.monlist small { color: var(--ink-2); }
+.petup { display: flex; align-items: center; gap: 10px; justify-content: center; background: var(--sheet); border: 2px solid var(--rail); border-radius: 12px; padding: 6px 12px; margin-bottom: 10px; }
+.petup .critter { width: 64px; height: 64px; }
+.petup b { font-family: var(--round); font-size: 18px; }
+.petup span { color: var(--answer); }
+.petup.evo { border-color: var(--gold); }
+
 </style>
 </head>
 <body>
@@ -1089,7 +1141,7 @@ const PICS = {
     return {
       version: 1,
       settings: { level: 'kids', tokyo: 'tokyo', sound: true, reward: '', rewardDays: 5, seenIntro: false, seenRunHint: false, seenPeekHint: false, ds: '', iken: false, minutes: 5, grade: 6 },
-      cycles: [], sessions: [], rewardShown: [], inProgress: null, map: {}, quizLog: []
+      cycles: [], sessions: [], rewardShown: [], inProgress: null, map: {}, quizLog: [], pet: null, mons: []
     };
   }
   function normalize(s) {
@@ -1097,7 +1149,7 @@ const PICS = {
     s.settings = Object.assign(f.settings, s.settings || {});
     if (!MINUTES.includes(s.settings.minutes)) s.settings.minutes = 5;
     if (![3, 4, 5, 6].includes(s.settings.grade)) s.settings.grade = 6;   // 基準が決まるまでは絞らない（D-84）
-    s.cycles = s.cycles || []; s.sessions = s.sessions || []; s.rewardShown = s.rewardShown || []; s.map = s.map || {}; s.quizLog = s.quizLog || [];
+    s.cycles = s.cycles || []; s.sessions = s.sessions || []; s.rewardShown = s.rewardShown || []; s.map = s.map || {}; s.quizLog = s.quizLog || []; s.mons = s.mons || []; if (s.pet && !['hinoko', 'shizuku', 'mebuki'].includes(s.pet.kind)) s.pet = null;
     s.cycles.forEach(c => { c.marks = c.marks || {}; c.notYet = c.notYet || []; });
     if (s.inProgress && !s.cycles.some(c => c.id === s.inProgress.cycleId)) s.inProgress = null;
     return s;
@@ -1322,7 +1374,7 @@ const PICS = {
     }
   }
   function rerenderKeepScroll() { const y = window.scrollY; render(); window.scrollTo(0, y); }
-  const SCREEN_NAMES = { home: 'ホーム', pick: '表をえらぶ', intro: 'やり方', check: '言えるチェック', mode: 'モードえらび', who: 'だれとやった？', result: 'けっか', weak: '苦手', graph: 'グラフ', table: '表を見る', parent: 'おうちの人', resume: 'と中から', quiz: '地図クイズ', mapview: '日本地図' };
+  const SCREEN_NAMES = { home: 'ホーム', pick: '表をえらぶ', intro: 'やり方', check: '言えるチェック', mode: 'モードえらび', who: 'だれとやった？', result: 'けっか', weak: '苦手', graph: 'グラフ', table: '表を見る', parent: 'おうちの人', resume: 'と中から', quiz: '地図クイズ', mapview: '日本地図', petpick: '相ぼう', mons: 'なかま' };
   let toastTimer = 0;
   function toast(msg) {
     const t = document.getElementById('toast');
@@ -1352,6 +1404,85 @@ const PICS = {
     return h + '</ol>';
   }
 
+  /* ---------- 相ぼうと モンスター（D-85） ---------- */
+  // 相ぼう：音読した日（練習・と中も）ごとに レベル+1。表を 7日 クリアするたびに 進化（3だんかいまで）
+  // モンスター：音読した日に 地図クイズで 7わり せいかい → 1日1ぴき。強さは ランダム
+  const PETS = {
+    hinoko: { name: 'ヒノコ', body: '#F0997B', dark: '#993C1D', top: 'fire' },
+    shizuku: { name: 'シズク', body: '#85B7EB', dark: '#185FA5', top: 'drop' },
+    mebuki: { name: 'メブキ', body: '#97C459', dark: '#3B6D11', top: 'leaf' }
+  };
+  const MONS = [
+    { name: 'ゴロン', body: '#B4B2A9', dark: '#5F5E5A', top: 'rock' },
+    { name: 'ピカリ', body: '#FAC775', dark: '#854F0B', top: 'star' },
+    { name: 'フワン', body: '#F4C0D1', dark: '#993556', top: 'cloud' },
+    { name: 'ツノドン', body: '#AFA9EC', dark: '#3C3489', top: 'horn' },
+    { name: 'ミズモ', body: '#5DCAA5', dark: '#0F6E56', top: 'drop' },
+    { name: 'ヨルン', body: '#888780', dark: '#2C2C2A', top: 'moon' }
+  ];
+  function critter(d, stage = 1) {   // 丸い体＋頭の しるし。stage が上がると 大きく、手と かんむりが つく
+    const s = 0.8 + stage * 0.1;
+    const tops = {
+      fire: `<path d="M50 6 C58 18 64 24 58 34 C54 28 50 30 50 30 C50 30 46 28 42 34 C36 24 42 18 50 6Z" fill="${d.dark}"/>`,
+      drop: `<path d="M50 4 C58 16 62 22 62 28 A12 11 0 0 1 38 28 C38 22 42 16 50 4Z" fill="${d.dark}"/>`,
+      leaf: `<path d="M50 32 C44 16 30 16 28 18 C32 28 42 32 50 32 C58 32 68 28 72 18 C70 16 56 16 50 32Z" fill="${d.dark}"/>`,
+      rock: `<path d="M36 30 L42 16 L52 22 L60 12 L66 30Z" fill="${d.dark}"/>`,
+      star: `<path d="M50 6 L54 18 L67 18 L57 26 L61 38 L50 30 L39 38 L43 26 L33 18 L46 18Z" fill="${d.dark}"/>`,
+      cloud: `<circle cx="38" cy="26" r="8" fill="${d.dark}"/><circle cx="50" cy="20" r="10" fill="${d.dark}"/><circle cx="62" cy="26" r="8" fill="${d.dark}"/>`,
+      horn: `<path d="M36 32 L30 8 L44 28Z M64 32 L70 8 L56 28Z" fill="${d.dark}"/>`,
+      moon: `<path d="M58 8 A16 16 0 1 0 64 34 A12 12 0 1 1 58 8Z" fill="${d.dark}"/>`
+    };
+    const arms = stage >= 2 ? `<ellipse cx="22" cy="64" rx="7" ry="10" fill="${d.body}" stroke="${d.dark}" stroke-width="2.5" transform="rotate(-25 22 64)"/><ellipse cx="78" cy="64" rx="7" ry="10" fill="${d.body}" stroke="${d.dark}" stroke-width="2.5" transform="rotate(25 78 64)"/>` : '';
+    const crown = stage >= 3 ? `<path d="M36 40 L40 30 L46 38 L50 28 L54 38 L60 30 L64 40Z" fill="#F2B705" stroke="#854F0B" stroke-width="1.5"/>` : '';
+    return `<svg class="critter" viewBox="0 0 100 100" aria-hidden="true"><g transform="translate(50 60) scale(${s}) translate(-50 -60)">
+      ${tops[d.top] || ''}${arms}<ellipse cx="50" cy="62" rx="30" ry="27" fill="${d.body}" stroke="${d.dark}" stroke-width="2.5"/>${crown}
+      <circle cx="40" cy="60" r="4.5" fill="#2C2C2A"/><circle cx="60" cy="60" r="4.5" fill="#2C2C2A"/><circle cx="41.5" cy="58.5" r="1.5" fill="#fff"/><circle cx="61.5" cy="58.5" r="1.5" fill="#fff"/>
+      <path d="M45 70 Q50 75 55 70" fill="none" stroke="#2C2C2A" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="31" cy="68" r="4" fill="${d.dark}" opacity=".25"/><circle cx="69" cy="68" r="4" fill="${d.dark}" opacity=".25"/></g></svg>`;
+  }
+  const playDays = () => uniq(S.sessions.map(s => s.day));
+  function streak() {   // 今日（まだなら きのう）から さかのぼって つづいた 日数
+    const set = new Set(playDays());
+    let d = set.has(today()) ? today() : addDays(today(), -1), n = 0;
+    while (set.has(d)) { n++; d = addDays(d, -1); }
+    return n;
+  }
+  const clearedCount = () => S.cycles.filter(c => c.kind === 'main' && c.finishedAt).length;
+  const petStage = () => Math.min(3, 1 + clearedCount());
+  const stars = n => '★'.repeat(n) + '<i>' + '★'.repeat(5 - n) + '</i>';
+  function petCard() {
+    if (!S.pet) return `<section class="petcard empty"><div class="pets3">${Object.keys(PETS).map(k => critter(PETS[k])).join('')}</div>
+      <p>音読すると 大きく なる <b>相ぼう</b>を えらぼう</p>${btn('petPick', '相ぼうを えらぶ', 'btn-main')}</section>`;
+    const p = PETS[S.pet.kind], st = petStage(), c = cur();
+    const inCycle = c && c.kind === 'main' && !c.finishedAt ? daysOf(c).length : 0;
+    const next = st >= 3 ? 'さいごまで 進化したよ！' : `あと <b>${DAYS - inCycle}日</b>で 進化！`;
+    return `<section class="petcard"><div class="petpic">${critter(p, st)}</div>
+      <div class="petinfo"><p class="petname">${p.name} <span>レベル ${playDays().length + 1}</span></p>
+      <div class="petbar"><i style="width:${st >= 3 ? 100 : Math.round(inCycle / DAYS * 100)}%"></i></div><p class="petnext">${next}</p></div></section>`;
+  }
+  function statsCard() {
+    return `<div class="stats"><div><span>つづけた 日</span><b>${playDays().length}<small>日</small></b></div>
+      <div><span>れんぞく</span><b>${streak()}<small>日</small></b></div>
+      <div><span>なかま</span><b>${(S.mons || []).length}<small>ひき</small></b></div></div>`;
+  }
+  const MON_NEED = 0.7;
+  function tryGetMon(z) {
+    const need = Math.ceil(z.n * MON_NEED);
+    if (!playDays().includes(today())) return { noOndoku: true };
+    if (S.mons.some(m => m.day === today())) return { already: true };
+    if (z.ok < need) return { miss: need - z.ok };
+    const w = z.ok === z.n ? [20, 30, 27, 15, 8] : [40, 30, 18, 9, 3];   // 全問せいかいなら 強いのが 出やすい
+    let r = Math.random() * 100, star = 1;
+    for (let i = 0; i < 5; i++) { if (r < w[i]) { star = i + 1; break; } r -= w[i]; }
+    const mon = { sp: Math.floor(Math.random() * MONS.length), star, pow: star * 20 + Math.floor(Math.random() * (star === 5 ? 50 : 20)), day: today() };
+    S.mons.push(mon); save();
+    return { mon };
+  }
+  function monCard(m) {
+    const d = MONS[m.sp];
+    return `<div class="moncard ${m.star >= 5 ? 'super' : ''}">${critter(d)}<p class="mn">${d.name}</p><p class="ms">${stars(m.star)}</p><p class="mp">強さ <b>${m.pow}</b></p></div>`;
+  }
+
   /* ---------- 画面 ---------- */
   const SCREENS = {};
 
@@ -1372,8 +1503,12 @@ const PICS = {
       const t = titleFor(c);
       const od = officialDays(c), need = S.settings.rewardDays;
       body = `
-        ${rail(c)}
-        <p class="daynote">${doneToday ? '今日の 音読は 終わったよ！<br>もう1回 やっても いいよ' : `今日は <b>${dn}日め</b>`}</p>
+        <section class="weekcard">
+          <p class="wk-t">今週の 表</p><p class="wk-name">${esc(DS.title)}</p>
+          <p class="wk-d"><b>${doneToday ? daysOf(c).length : dn}日め</b> / ${DAYS}日</p>
+          ${rail(c)}
+          <p class="daynote">${doneToday ? '今日の 音読は 終わったよ！ もう1回 やっても いいよ' : '7日 同じ 表で おぼえよう'}</p>
+        </section>
         <dl class="mini">
           ${last ? `<div><dt>前の 記ろく</dt><dd>${lapsText(last.rowsDone, last.activeRows)}<small>（${minOf(last)}分）</small> <span class="tag ${last.official ? 'tag-off' : ''}">${last.official ? '公式' : '練習'}</span></dd></div>` : ''}
           <div><dt>しょう号</dt><dd>${t ? `${t.t.icon} ${t.t.name}` : '<span class="muted">公式 記ろくで 決まるよ</span>'}</dd></div>
@@ -1381,6 +1516,7 @@ const PICS = {
         </dl>
         <div class="actions">
           ${btn('start', doneToday ? `▶ もう1回（${S.settings.minutes}分）` : `▶ 始める（${S.settings.minutes}分）`, doneToday ? 'btn-main btn-quiet' : 'btn-main')}
+          <div class="row2">${btn('pick', '📚 表を かえる')}${btn('mons', `🐾 なかま ${S.mons.length}`)}</div>
           <div class="row2">${btn('graph', 'グラフ')}${btn('table', '表を見る')}</div>
           ${painted() ? btn('mapview', `🗾 日本地図 ${painted()} / 47`, 'btn-sub mapbtn') : ''}
         </div>`;
@@ -1413,13 +1549,27 @@ const PICS = {
     }
     return `
       <header class="top">
-        <div><h1 class="brand">ぐるぐる音読</h1><button type="button" class="dspick" data-act="pick" aria-label="表を かえる">${dsTitle()}<span class="chg">表を かえる</span></button></div>
+        <div><h1 class="brand">ぐるぐる音読</h1></div>
         <button type="button" class="parent" data-hold="parent" aria-label="おうちの人の画面（2秒 長おし）"><span>おうちの人</span><i></i></button>
       </header>
-      <main class="home">${body}</main>`;
+      <main class="home">${petCard()}${S.pet || S.sessions.length ? statsCard() : ''}${body}
+        ${c && c.kind === 'main' && !c.finishedAt ? '' : `<div class="row2 pickrow">${btn('pick', `📚 表を かえる（今：${esc(DS.title)}）`)}${btn('mons', `🐾 なかま ${S.mons.length}`)}</div>`}</main>`;
   };
 
-  const SUBJECTS = [['shakai', '社会'], ['rika', '理科'], ['sansu', '算数'], ['kokugo', '国語']];
+  SCREENS.petpick = function () {
+    return `<header class="bar"><h2>相ぼうを えらぼう</h2><p class="hint">毎日 音読すると レベルが 上がるよ。表を 7日 クリアすると 進化！</p></header>
+      <main class="petpick">${Object.keys(PETS).map(k => `<button type="button" class="petopt" data-act="petSet" data-k="${k}">${critter(PETS[k])}<b>${PETS[k].name}</b></button>`).join('')}</main>
+      <footer class="dock">${btn('home', 'もどる', 'btn-sub')}</footer>`;
+  };
+  SCREENS.mons = function () {
+    const ms = S.mons, kinds = uniq(ms.map(m => m.sp)).length;
+    const top = ms.length ? ms.reduce((a, b) => (b.pow > a.pow ? b : a)) : null;
+    return `<header class="bar"><h2>なかま ${ms.length}ひき</h2><p class="hint">しゅるい ${kinds} / ${MONS.length}。${top ? `いちばん 強いのは ${MONS[top.sp].name}（強さ ${top.pow}）` : '音読の あとの 地図クイズで 7問 せいかいすると ゲット！'}</p></header>
+      <main class="monlist">${[...ms].reverse().map(m => `<div>${monCard(m)}<small>${md(m.day)}</small></div>`).join('')}</main>
+      <footer class="dock">${btn('home', 'ホームへ', 'btn-main')}</footer>`;
+  };
+
+  const SUBJECTS = [['shakai', '社会'],['rika', '理科'], ['sansu', '算数'], ['kokugo', '国語']];
   SCREENS.pick = function () {
     const item = id => {
       const d = DATASETS[id], cs = cyclesOfDs(id), c = cs[cs.length - 1];
@@ -1745,6 +1895,7 @@ const PICS = {
       Object.values(seen).forEach(x => newBests.push(x));
     }
     const before = c.kind === 'main' ? daysOf(c).length : 0;
+    const levelUp = !!S.pet && !playDays().includes(s.day), stageBefore = petStage();
     S.sessions.push(s);
     S.inProgress = null;
     if (s.mode === 'hide') S.settings.seenPeekHint = true;
@@ -1754,15 +1905,16 @@ const PICS = {
     const newDay = c.kind === 'main' && daysOf(c).length > before;
     save();
     R = null;
-    go('result', { result: { s, newBests, firsts, cleared, newDay, rewardNow } });
+    const evolved = !!S.pet && petStage() > stageBefore;
+    go('result', { result: { s, newBests, firsts, cleared, newDay, rewardNow, levelUp, evolved } });
     setTimeout(() => {
-      if (newBests.length || rewardNow) { SND.fanfare(); confetti(); }
+      if (newBests.length || rewardNow || evolved) { SND.fanfare(); confetti(); }
       else if (newDay || s.official) SND.stamp();
     }, 250);
   }
 
   SCREENS.result = function () {
-    const { s, newBests, firsts, cleared, rewardNow } = ui.result;
+    const { s, newBests, firsts, cleared, rewardNow, levelUp, evolved } = ui.result;
     const c = cycleById(s.cycleId);
     const prevAll = prevBestAll(s.id);
     const ok = s.rows.filter(r => !r.long);
@@ -1791,6 +1943,8 @@ const PICS = {
     if (c.kind === 'main') cand = uniq([...s.peeks, ...(c.notYet || [])]).filter(k => mark(c, k) !== 'known' && c.pairCodes.includes(k));
     return `<main class="result">
       ${best ? `<div class="medal"><svg viewBox="0 0 60 64" aria-hidden="true"><path d="M17 2h11l6 18H23zM43 2H32l-6 18h11z" fill="var(--answer)"/><circle cx="30" cy="42" r="20" fill="var(--gold)"/><circle cx="30" cy="42" r="14.5" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/><path d="M30 33l2.9 6 6.5.7-4.9 4.4 1.4 6.4L30 47.3l-5.9 3.2 1.4-6.4-4.9-4.4 6.5-.7z" fill="#fff" opacity=".9"/></svg><b>自分の 新ベスト！</b></div>` : ''}
+      ${evolved ? `<div class="petup evo">${critter(PETS[S.pet.kind], petStage())}<b>${PETS[S.pet.kind].name}が 進化した！</b></div>`
+        : levelUp ? `<div class="petup">${critter(PETS[S.pet.kind], petStage())}<b>${PETS[S.pet.kind].name} レベルアップ！ <span>レベル ${playDays().length + 1}</span></b></div>` : ''}
       ${cleared ? '<div class="banner">7日 クリア！ ふく習は 2〜3週間後</div>' : ''}
       ${rewardNow ? `<div class="banner gold">ごほうび ゲット！ ${esc(S.settings.reward || 'おうちの人に 見せよう！')}</div>` : ''}
       <div class="res-top">${stamp}
@@ -2048,8 +2202,17 @@ const PICS = {
   };
   SCREENS.quizEnd = function () {
     const z = ui.qz;
+    if (!z.monDone) {   // 1回だけ しらべる（画面を かきなおしても ふえない）
+      z.monDone = true; z.monRes = tryGetMon(z);
+      if (z.monRes.mon) setTimeout(() => { SND.fanfare(); confetti(); }, 250);
+    }
+    const mr = z.monRes;
+    const monMsg = mr.mon ? `<div class="monget"><p class="end">モンスター ゲット！</p>${monCard(mr.mon)}${mr.mon.star >= 5 ? '<p class="wow">めっちゃ 強い！！</p>' : ''}</div>`
+      : mr.miss ? `<p class="hint">あと <b>${mr.miss}問</b> せいかいで モンスター ゲット！ もう1回 やってみよう</p>`
+      : mr.noOndoku ? '<p class="hint">音読を してから クイズを すると、モンスターが ゲットできるよ</p>'
+      : '<p class="hint">今日の モンスターは もう ゲットしたよ。また あした！</p>';
     return `<main class="center quizend"><p class="end">クイズ おわり！</p>
-      <p class="big">${z.ok} / ${z.n}問 せいかい</p>
+      <p class="big">${z.ok} / ${z.n}問 せいかい</p>${monMsg}
       <p class="mid">日本地図 <b>${painted()}</b> / 47 県</p>
       <div class="mapwrap small">${mapSVG()}</div>
       <div class="actions">${btn('home', 'ホームへ', 'btn-main')}<div class="row2">${btn('quiz', 'もう1回 クイズ')}${btn('mapview', '地図を 見る')}</div></div></main>`;
@@ -2309,7 +2472,19 @@ const PICS = {
       save(); rerenderKeepScroll();
     },
     weak: () => go('weak'),
-    pick: () => go('pick', { pickSubj: null }),
+    pick: () => {   // 7日の と中なら 1回 聞く（目うつり しないように。D-85）
+      const c = cur();
+      if (c && c.kind === 'main' && !c.finishedAt && daysOf(c).length > 0) {
+        return showOverlay(`<h2>表を かえる？</h2><p>今の 表は <b>${daysOf(c).length}日め</b> まで やったよ。<br>7日 おわるまで 同じ 表が よく おぼえられるよ。</p>
+          <div class="actions">${btn('ovClose', 'このまま つづける', 'btn-main')}${btn('pickGo', 'それでも かえる')}</div>`);
+      }
+      go('pick', { pickSubj: null });
+    },
+    pickGo: () => { hideOverlay(); go('pick', { pickSubj: null }); },
+    ovClose: () => hideOverlay(),
+    petPick: () => go('petpick'),
+    petSet: d => { S.pet = { kind: d.k, at: today() }; save(); go('home'); setTimeout(() => { SND.fanfare(); confetti(); }, 150); },
+    mons: () => go('mons'),
     pickDs: d => { S.settings.ds = d.id; useDs(d.id); save(); ui.result = null; go('home'); },
     ikenOff: d => { S.settings.iken = d.v === '1'; save(); rerenderKeepScroll(); },
     parent: () => go('parent'),
