@@ -611,6 +611,24 @@ body.print-preview .page { width: 297mm; height: 210mm; padding: 10mm; box-sizin
 img.critter { object-fit: contain; -webkit-user-select: none; user-select: none; }
 .bossfight .end { font-size: 26px; font-weight: 700; margin: 6px 0; }
 
+/* ---- 使い心地の改善（D-92〜D-96） ---- */
+.actions.first { margin-top: 0; padding-top: 12px; padding-bottom: 6px; }
+.actions.first .btn-main { min-height: 76px; font-size: 24px; }
+.home > .weekcard, .home > .clear, .home > .mini, .home > .row2, .home > .stats, .home > .bosscard, .home > .hero { margin-top: 12px; }
+.duebar { display: grid; gap: 8px; background: color-mix(in srgb, var(--signal) 22%, var(--sheet)); border: 2px solid var(--ink); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+.duebar p { margin: 0; font-family: var(--round); font-weight: 900; font-size: 18px; }
+.duebar small { font-weight: 500; font-size: 14px; color: var(--ink-2); }
+.duebar .btn-main { min-height: 64px; font-size: 22px; }
+.tnext { display: block; font-size: 13px; font-weight: 500; color: var(--ink-2); }
+.loopnote { margin-top: 14px; font-size: 17px; background: var(--sheet); border: 2px dashed var(--rail); border-radius: 8px; padding: 8px 10px; }
+.who-btn { min-height: 92px; }
+.who-off { background: var(--gold); border-color: #8a6a12; box-shadow: 0 5px 0 #8a6a12; color: var(--ink); }
+.who-prac { background: var(--rail); }
+details.more { margin-top: 14px; border: 2px solid var(--line); border-radius: 8px; padding: 6px 10px; background: var(--sheet); }
+details.more summary { font-family: var(--round); font-weight: 900; font-size: 17px; min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+.marksbtn { width: 100%; margin-top: 8px; min-height: 52px; font-size: 17px; }
+.cands { margin-top: 12px; }
+
 </style>
 </head>
 <body>
@@ -1327,22 +1345,23 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     { r: 1.25, name: '電車', icon: '🚃' }, { r: 1.4, name: '新かん線', icon: '🚄' },
     { r: 1.6, name: 'ロケット', icon: '🚀' }
   ];
-  function titleRaw(c) {   // 同じ条件の最初の公式記録を基準に、公式の最高周回数の伸び（モード別）
+  function titleRaw(c) {   // その表の 最初の公式記録（モード・時間ごと）を基準に、公式の最高周回数の伸び。★や「言える」を かえても 基準は 作り直さない（D-95）
     if (!c) return null;
     let best = null;
     ['look', 'hide'].forEach(mode => {
       const off = sessionsOf(c).filter(s => s.mode === mode && s.official && !s.partial);
       if (!off.length) return;
-      const sig = off[off.length - 1].tableSig, mn = minOf(off[off.length - 1]);   // 時間がちがう回は くらべない
-      const g = off.filter(s => s.tableSig === sig && minOf(s) === mn);
+      const mn = minOf(off[off.length - 1]);   // 時間がちがう回は くらべない
+      const g = off.filter(s => minOf(s) === mn);
       const base = lapsOf(g[0]);
       if (!base) return;
-      const ratio = Math.max(...g.map(lapsOf)) / base;
-      const t = TITLES.filter(x => ratio >= x.r).pop();
-      if (!best || TITLES.indexOf(t) > TITLES.indexOf(best.t)) best = { t, ratio, mode };
+      const top = Math.max(...g.map(lapsOf)), ratio = top / base;
+      const t = TITLES.filter(x => ratio >= x.r).pop(), nx = TITLES[TITLES.indexOf(t) + 1];
+      if (!best || TITLES.indexOf(t) > TITLES.indexOf(best.t)) best = { t, ratio, mode, next: nx ? { t: nx, need: Math.max(0.1, base * nx.r - top) } : null };
     });
     return best;
-  }  function titleFor(c) {   // 一度とった称号は、しるしを付け直しても下げない
+  }
+  function titleFor(c) {   // 一度とった称号は、しるしを付け直しても下げない
     if (!c) return null;
     const t = titleRaw(c);
     const keep = c.titleMax != null ? TITLES[c.titleMax] : null;
@@ -1428,7 +1447,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     }
   }
   function rerenderKeepScroll() { const y = window.scrollY; render(); window.scrollTo(0, y); }
-  const SCREEN_NAMES = { home: 'ホーム', pick: '表をえらぶ', intro: 'やり方', check: '言えるチェック', mode: 'モードえらび', who: 'だれとやった？', result: 'けっか', weak: '苦手', graph: 'グラフ', table: '表を見る', parent: 'おうちの人', resume: 'と中から', quiz: '地図クイズ', mapview: '日本地図', petpick: '相ぼう', mons: 'なかま', boss: 'ボス' };
+  const SCREEN_NAMES = { marks: 'しるし', home: 'ホーム', pick: '表をえらぶ', intro: 'やり方', check: '言えるチェック', mode: 'モードえらび', who: 'だれとやった？', result: 'けっか', weak: '苦手', graph: 'グラフ', table: '表を見る', parent: 'おうちの人', resume: 'と中から', quiz: '地図クイズ', mapview: '日本地図', petpick: '相ぼう', mons: 'なかま', boss: 'ボス' };
   let toastTimer = 0;
   function toast(msg) {
     const t = document.getElementById('toast');
@@ -1503,6 +1522,24 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     while (set.has(d)) { n++; d = addDays(d, -1); }
     return n;
   }
+  function dueReviews() {
+    const out = [];
+    visibleDs().forEach(id => {
+      const cs = cyclesOfDs(id);
+      cs.forEach(c => {
+        if (c.kind !== 'main' || !c.finishedAt || today() < addDays(c.finishedAt, REVIEW_FROM)) return;
+        const done = cs.some(x => x.kind === 'review' && (x.baseId ? x.baseId === c.id : x.startedAt > c.finishedAt) && sessionsOf(x).length);
+        if (!done) out.push({ id, c });
+      });
+    });
+    return out;
+  }
+  // クイズで まちがえたままの 問題（そのサイクルの 中で、さい後の 答えが ×）。苦手こうほ・ふく習に 入れる（D-93）
+  function quizMissed(c) {
+    const from = daysOf(c)[0] || today(), last = {};
+    (S.quizLog || []).forEach(l => { if (l.ds === c.datasetId && l.day >= from && !l.skip) last[l.code] = l.ok; });
+    return Object.keys(last).filter(k => !last[k]);
+  }
   const clearedCount = () => S.cycles.filter(c => c.kind === 'main' && c.finishedAt).length;
   const petStage = () => Math.min(3, 1 + clearedCount());
   const stars = n => '★'.repeat(n) + '<i>' + '★'.repeat(5 - n) + '</i>';
@@ -1558,7 +1595,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   const bossOf = k => Object.assign({}, BOSSES[k % BOSSES.length], { k, hp: 150 + 120 * k, up: k >= BOSSES.length });
   const bossOpen = () => !!S.pet && clearedCount() > bossNo();
   function bossCard() {
-    if (!S.pet) return '';
+    if (!S.pet || !(S.mons.length || clearedCount())) return '';   // 音読を 始める前から 数字だけ 出さない
     const b = bossOf(bossNo()), tp = teamPow(), open = bossOpen();
     return `<section class="bosscard ${open ? 'open' : ''}"><div class="bosspic">${critter(b)}</div>
       <div class="bossinfo"><p class="bt">${open ? 'ボスが あらわれた！' : '次の ボス'}</p>
@@ -1609,20 +1646,32 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   SCREENS.home = function () {
     if (S.inProgress) return SCREENS.resume();
     const c = cur();
+    // 主ボタンは 上に（小さい画面でも 開いて すぐ 見える。D-92）
+    const due = dueReviews().filter(x => !(x.id === DS.id && cur() === x.c));
+    const dueBar = due.length ? `<section class="duebar"><p><b>ふく習の 日！</b> ${esc(DATASETS[due[0].id].title)}<br><small>わすれかけた ころに やると よく おぼえるよ</small></p>
+      ${btn('reviewDs', `▶ ふく習（${S.settings.minutes}分）`, 'btn-main', `data-id="${due[0].id}" data-c="${due[0].c.id}"`)}</section>` : '';
+    const playedHere = S.sessions.some(s => s.day === today() && (cycleById(s.cycleId) || {}).datasetId === DS.id);
+    const quizBtn = playedHere && canQuiz() ? btn('quiz', S.mons.some(m => m.day === today()) ? '❓ クイズを もう1回' : '❓ 今日の クイズ', 'btn-main btn-quiz') : '';
     let body = '';
     if (!c) {
       body = `
+        <div class="actions first">${btn('start', '▶ 始める', 'btn-main')}</div>
         <section class="hero">
           <p class="lead">今日から <b>7日間</b>。<br>1日 <b>${S.settings.minutes}分</b>、声に 出して<br>速く 言うだけ。</p>
           <div class="sample">${rb(PAIR[ALL[0]].q)}・${rb(PAIR[ALL[0]].a)}・${rb(PAIR[ALL[0]].q)}・${rb(PAIR[ALL[0]].a)}</div>
         </section>
-        <div class="actions">${btn('start', '▶ 始める', 'btn-main')}<div class="row2">${btn('table', '表を見る')}</div></div>`;
+        <div class="row2">${btn('table', '表を見る')}${btn('pick', '📚 表を かえる')}</div>
+        ${S.mons.length ? `<div class="row2">${btn('mons', `🐾 なかま ${S.mons.length}`)}</div>` : ''}`;
     } else if (c.kind === 'main' && !c.finishedAt) {
       const dn = dayNumber(c), doneToday = daysOf(c).includes(today());
       const ss = sessionsOf(c), last = ss[ss.length - 1];
-      const t = titleFor(c);
+      const t = titleFor(c), raw = titleRaw(c);
       const od = officialDays(c), need = S.settings.rewardDays;
       body = `
+        <div class="actions first">
+          ${btn('start', doneToday ? `▶ もう1回（${S.settings.minutes}分）` : `▶ 始める（${S.settings.minutes}分）`, doneToday && !quizBtn ? 'btn-main btn-quiet' : doneToday ? 'btn-sub' : 'btn-main')}
+          ${quizBtn}
+        </div>
         <section class="weekcard">
           <p class="wk-t">今週の 表</p><p class="wk-name">${esc(DS.title)}</p>
           <p class="wk-d"><b>${doneToday ? daysOf(c).length : dn}日め</b> / ${DAYS}日</p>
@@ -1631,49 +1680,50 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
         </section>
         <dl class="mini">
           ${last ? `<div><dt>前の 記ろく</dt><dd>${lapsText(last.rowsDone, last.activeRows)}<small>（${minOf(last)}分）</small> <span class="tag ${last.official ? 'tag-off' : ''}">${last.official ? '公式' : '練習'}</span></dd></div>` : ''}
-          <div><dt>しょう号</dt><dd>${t ? `${t.t.icon} ${t.t.name}` : '<span class="muted">公式 記ろくで 決まるよ</span>'}</dd></div>
+          <div><dt>しょう号</dt><dd>${t ? `${t.t.icon} ${t.t.name}${raw && raw.next && raw.t === t.t ? `<small class="tnext">${raw.next.t.icon}まで あと ${raw.next.need.toFixed(1)}しゅう</small>` : ''}` : '<span class="muted">公式 記ろくで 決まるよ</span>'}</dd></div>
           <div><dt>ごほうびまで</dt><dd>${S.rewardShown.includes(c.id) ? 'ゲット！' : `公式の日 <b>${od}</b> / ${need}`}</dd></div>
         </dl>
-        <div class="actions">
-          ${btn('start', doneToday ? `▶ もう1回（${S.settings.minutes}分）` : `▶ 始める（${S.settings.minutes}分）`, doneToday ? 'btn-main btn-quiet' : 'btn-main')}
-          <div class="row2">${btn('pick', '📚 表を かえる')}${btn('mons', `🐾 なかま ${S.mons.length}`)}</div>
-          <div class="row2">${btn('graph', 'グラフ')}${btn('table', '表を見る')}</div>
-          ${painted() ? btn('mapview', `🗾 日本地図 ${painted()} / 47`, 'btn-sub mapbtn') : ''}
-        </div>`;
+        <div class="row2">${btn('pick', '📚 表を かえる')}${btn('mons', `🐾 なかま ${S.mons.length}`)}</div>
+        <div class="row2">${btn('graph', 'グラフ')}${btn('table', '表を見る')}</div>
+        ${painted() ? btn('mapview', `🗾 日本地図 ${painted()} / 47`, 'btn-sub mapbtn') : ''}`;
     } else if (c.kind === 'main') {
       const from = addDays(c.finishedAt, REVIEW_FROM), to = addDays(c.finishedAt, REVIEW_TO);
-      const due = today() >= from;
+      const dueNow = today() >= from, t = titleFor(c);
       body = `
-        ${rail(c)}
+        <div class="actions first">
+          ${dueNow ? btn('review', `▶ ふく習（${S.settings.minutes}分）`, 'btn-main') : btn('pickGo', '▶ 次の 表を えらぶ', 'btn-main')}
+          ${quizBtn}
+        </div>
         <section class="clear">
           <h2>7日 クリア！</h2>
+          <p class="wk-name">${esc(DS.title)}${t ? `　${t.t.icon} ${t.t.name}` : ''}</p>
           ${S.rewardShown.includes(c.id) ? `<p class="reward">ごほうび：<b>${esc(S.settings.reward || 'おうちの人に 見せよう！')}</b></p>` : ''}
-          <p>ふく習は <b>${md(from)}〜${md(to)}</b> ごろ。<br>苦手を 中心に ${S.settings.minutes}分。</p>
-          ${due ? '' : `<p class="muted">今は ${md(from)} まで お休み。わすれたころに やると よく おぼえるよ。</p>`}
+          <p>ふく習は <b>${md(from)}〜${md(to)}</b> ごろ。その日に なったら ホームに 出るよ。</p>
+          ${dueNow ? '' : '<p class="muted">それまでは 次の 表を やろう。れんぞくも つづくよ！</p>'}
         </section>
-        <div class="actions">
-          ${btn('review', due ? `▶ ふく習（${S.settings.minutes}分）` : 'ふく習を 早めに やる', due ? 'btn-main' : 'btn-sub')}
-          <div class="row2">${btn('graph', 'グラフ')}${btn('again', 'もう1回 7日間')}</div>
-        </div>`;
+        <div class="row2">${btn('graph', 'グラフ')}${btn('mons', `🐾 なかま ${S.mons.length}`)}</div>
+        <div class="row2">${dueNow ? btn('pickGo', '次の 表を えらぶ') : btn('review', 'ふく習を 早めに やる')}${btn('again', 'この 表を もう1回 7日間')}</div>`;
     } else {
-      const ss = sessionsOf(c);
+      const ss = sessionsOf(c), back = S.settings.returnDs && S.settings.returnDs !== DS.id && DATASETS[S.settings.returnDs];
       body = `
+        <div class="actions first">
+          ${ss.length && back ? btn('backDs', `▶ 今週の 表に もどる（${esc(back.title)}）`, 'btn-main') : ''}
+          ${ss.length ? '' : btn('start', `▶ ふく習（${S.settings.minutes}分）`, 'btn-main')}
+          ${ss.length && !back ? btn('pickGo', '▶ 次の 表を えらぶ', 'btn-main') : ''}
+          ${quizBtn}
+        </div>
         <section class="clear">
           <h2>${ss.length ? 'ふく習 できた！' : 'ふく習'}</h2>
-          <p>苦手だった ものを 中心に <b>${c.pairCodes.length}こ</b>。${ss.length ? `<br>${ss.length}回 やったよ。` : ''}</p>
+          <p>${esc(DS.title)}：苦手だった ものを 中心に <b>${c.pairCodes.length}こ</b>。${ss.length ? `<br>${ss.length}回 やったよ。` : ''}</p>
         </section>
-        <div class="actions">
-          ${btn('start', ss.length ? '▶ もう1回 ふく習' : `▶ ふく習（${S.settings.minutes}分）`, ss.length ? 'btn-main btn-quiet' : 'btn-main')}
-          <div class="row2">${btn('graph', 'グラフ')}${btn('again', '新しく 7日間')}</div>
-        </div>`;
+        <div class="row2">${ss.length ? btn('start', 'もう1回 ふく習') : ''}${btn('graph', 'グラフ')}${btn('again', '新しく 7日間')}</div>`;
     }
     return `
       <header class="top">
         <div><h1 class="brand">ぐるぐる音読</h1></div>
         <button type="button" class="parent" data-hold="parent" aria-label="おうちの人の画面（2秒 長おし）"><span>おうちの人</span><i></i></button>
       </header>
-      <main class="home">${petCard()}${S.pet || S.sessions.length ? statsCard() : ''}${bossOpen() ? bossCard() : ''}${body}${bossOpen() ? '' : bossCard()}
-        ${c && c.kind === 'main' && !c.finishedAt ? '' : `<div class="row2 pickrow">${btn('pick', `📚 表を かえる（今：${esc(DS.title)}）`)}${btn('mons', `🐾 なかま ${S.mons.length}`)}</div>`}</main>`;
+      <main class="home">${dueBar}${petCard()}${body}${bossCard()}${S.pet || S.sessions.length ? statsCard() : ''}</main>`;
   };
 
   SCREENS.petpick = function () {
@@ -1697,7 +1747,8 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       let st = 'まだ';
       if (c) {
         const days = uniq(S.sessions.filter(s => s.cycleId === c.id).map(s => s.day)).length;
-        st = c.kind === 'review' ? 'ふく習' : c.finishedAt ? '7日 クリア' : `${days}日め まで`;
+        const t = c.kind === 'main' && c.finishedAt ? titleFor(c) : null;
+        st = c.kind === 'review' ? 'ふく習' : c.finishedAt ? `7日 クリア${t ? ' ' + t.t.icon : ''}` : `${days}日め まで`;
       }
       return `<button type="button" class="pickitem ${id === DS.id ? 'on' : ''}" data-act="pickDs" data-id="${id}">
         ${dsTitle(d)}<span class="pmeta">${d.pairs.filter(shown).length}こ ・ ${st}</span></button>`;
@@ -1728,7 +1779,8 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       <p>言えたら すぐ 次の ペアへ。</p>`,
     () => `<h2>1行 言えたら ボタン</h2>
       <p>1行は ${PER_ROW}ペア。<br>さい後まで 言えたら、下の 大きい ボタンを おす。</p>
-      <div class="fake-btn">言えた！ 次の行 ▶</div>`,
+      <div class="fake-btn">言えた！ 次の行 ▶</div>
+      <p class="loopnote">1行め → 2行め → … → さい後の 行 → <b>また 1行めへ</b>。<br>${S.settings.minutes}分 ぐるぐる 回すよ（これが 1しゅう）。</p>`,
     () => `<h2>${S.settings.minutes}分で 終わり</h2>
       <p>おぼえなくて いい。<br><b>速く 言う</b> ことだけ がんばろう。<br>速く 言えるほど おぼえて いるよ。</p>`,
     () => `<h2>読み方は 🔈で</h2>
@@ -1764,9 +1816,9 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       h += '</div>';
     }
     return `<header class="bar"><h2>言えるか チェック</h2>
-      <p class="hint">答えを 声に 出して 言ってから タッチ。めくって 「言えた」か「まだ」を えらぶ。<br>言えたものは この7日間 とばすよ。</p></header>
+      <p class="hint">${ui.remark ? 'めくって「言えた」か「まだ」を えらぶ。' : '<b>知っている ものが あったら</b> 言ってから めくって「言えた」に。言えたものは この7日間 とばすよ。<br>ぜんぶ めくらなくて OK。'}</p></header>
       <main class="check">${h}</main>
-      <footer class="dock">${btn('checkDone', n ? `これで OK（言えた ${n}こ は とばす）` : 'これで OK', 'btn-main')}</footer>`;
+      <footer class="dock">${btn('checkDone', ui.remark ? 'これで OK' : n ? `これで 始める（言えた ${n}こ は とばす）` : 'チェック しないで 始める', 'btn-main')}</footer>`;
   };
 
   SCREENS.mode = function () {
@@ -1911,7 +1963,8 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   function beginRun(mode) {
     const c = cur();
     const act = activeRows(c);
-    if (!act.length) { toast('全部「言える」に なって いるよ。おうちの人に 見直して もらおう'); return go('home'); }
+    if (!act.length) return showOverlay(`<h2>全部 言える！</h2><p>この 表は もう 全部 言えるね。<br>次の 表に すすもう。</p>
+      <div class="actions">${btn('pickGo', '▶ 次の 表を えらぶ', 'btn-main')}${btn('ovMarks', 'しるしを 見直す')}</div>`);
     R = { id: uid(), cycleId: c.id, mode, dur: durMs(), day: today(), startedAt: new Date().toISOString(), elapsed: 0, since: null, lapStart: 0,
       rowPos: 0, act, tableSig: tableSig(c, mode, act), rows: [], peeks: [], curPeeks: [], phase: 'run', lastTap: 0, pausedMs: 0 };
     countdown(`${mode === 'hide' ? 'かくして' : '見ながら'}・2回 つづけて 速く！<br>${OK_MISS}`, () => {
@@ -1945,7 +1998,8 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     render();
     const lapDone = R.rowPos === 0;
     const faster = ref && rec.ms < ref;
-    burst(faster ? `前の自分に 勝った！ −${sec(ref - rec.ms)}秒` : ref ? `${sec(rec.ms)}秒（前の自分 ${sec(ref)}秒）` : `${sec(rec.ms)}秒`, faster ? 'good' : '');
+    if (lapDone && R.rows.length === R.act.length) burst('1しゅう できた！ また 1行めから', 'good');
+    else burst(faster ? `前の自分に 勝った！ −${sec(ref - rec.ms)}秒` : ref ? `${sec(rec.ms)}秒（前の自分 ${sec(ref)}秒）` : `${sec(rec.ms)}秒`, faster ? 'good' : '');
     if (lapDone) { SND.lap(); popLap(); } else if (faster) SND.faster(); else SND.tap();
   }
   function burst(text, kind) {
@@ -1962,7 +2016,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   }
   function showPause() {
     const more = R && partialOK(Object.assign({}, R, { elapsed: el() }));
-    showOverlay(`<h2>お休み中</h2><p>タイマーは 止まって いるよ。<br>つづきは 今の 行の 始めから。</p>
+    showOverlay(`<h2>お休み中</h2><p>タイマーは 止まって いるよ。<br>つづきは 今の 行の 始めから。</p><p class="small">${OK_MISS}</p>
       <div class="actions">${btn('unpause', '▶ つづける', 'btn-main')}${btn('quit', more ? 'ここで 終わる（練習に のこす）' : 'やめる（のこさない）')}</div>`);
   }
   function pauseRun() {
@@ -1991,10 +2045,10 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       <p class="end">終わり！</p>
       <p class="big">${lapsText(R.rows.length, R.act.length)}</p>
       <p class="hint">言いかけの 行は 数えないよ。</p>
-      <h2>今日は だれと やった？</h2>
+      <h2>今日は だれと やった？</h2><p class="hint">本当の ほうを えらんでね</p>
       <div class="actions">
-        <button type="button" class="btn-main who-off" data-act="who" data-off="1"><b>おうちの人が 聞いてた</b><small>公式 記ろく・メダルが もらえる</small></button>
-        <button type="button" class="btn-sub who-prac" data-act="who" data-off="0"><b>一人で</b><small>練習 記ろく</small></button>
+        <button type="button" class="btn-main who-btn who-off" data-act="who" data-off="1"><b>おうちの人が 聞いてた</b><small>公式 記ろく</small></button>
+        <button type="button" class="btn-main who-btn who-prac" data-act="who" data-off="0"><b>一人で やった</b><small>練習 記ろく（グラフに のこる）</small></button>
       </div>
     </main>`;
   };
@@ -2017,6 +2071,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     }
     const before = c.kind === 'main' ? daysOf(c).length : 0;
     const levelUp = !!S.pet && !playDays().includes(s.day), stageBefore = petStage();
+    const t0 = c.kind === 'main' ? titleFor(c) : null, ti0 = t0 ? TITLES.indexOf(t0.t) : -1;
     S.sessions.push(s);
     S.inProgress = null;
     if (s.mode === 'hide') S.settings.seenPeekHint = true;
@@ -2027,15 +2082,16 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     save();
     R = null;
     const evolved = !!S.pet && petStage() > stageBefore;
-    go('result', { result: { s, newBests, firsts, cleared, newDay, rewardNow, levelUp, evolved } });
+    const t1 = c.kind === 'main' ? titleFor(c) : null, titleUp = t1 && TITLES.indexOf(t1.t) > Math.max(0, ti0) ? t1.t : null;
+    go('result', { result: { s, newBests, firsts, cleared, newDay, rewardNow, levelUp, evolved, titleUp } });
     setTimeout(() => {
-      if (newBests.length || rewardNow || evolved) { SND.fanfare(); confetti(); }
+      if (newBests.length || rewardNow || evolved || titleUp) { SND.fanfare(); confetti(); }
       else if (newDay || s.official) SND.stamp();
     }, 250);
   }
 
   SCREENS.result = function () {
-    const { s, newBests, firsts, cleared, rewardNow, levelUp, evolved } = ui.result;
+    const { s, newBests, firsts, cleared, rewardNow, levelUp, evolved, titleUp } = ui.result;
     const c = cycleById(s.cycleId);
     const prevAll = prevBestAll(s.id);
     const ok = s.rows.filter(r => !r.long);
@@ -2061,30 +2117,49 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     else if (!best && firsts.length) msg = '公式 記ろく たん生！ 次は これより 速く。';
     // にがて こうほ
     let cand = [];
-    if (c.kind === 'main') cand = uniq([...s.peeks, ...(c.notYet || [])]).filter(k => mark(c, k) !== 'known' && c.pairCodes.includes(k));
+    if (c.kind === 'main') cand = uniq([...s.peeks, ...(c.notYet || []), ...quizMissed(c)]).filter(k => mark(c, k) !== 'known' && c.pairCodes.includes(k)).slice(0, 12);
     return `<main class="result">
       ${best ? `<div class="medal"><svg viewBox="0 0 60 64" aria-hidden="true"><path d="M17 2h11l6 18H23zM43 2H32l-6 18h11z" fill="var(--answer)"/><circle cx="30" cy="42" r="20" fill="var(--gold)"/><circle cx="30" cy="42" r="14.5" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/><path d="M30 33l2.9 6 6.5.7-4.9 4.4 1.4 6.4L30 47.3l-5.9 3.2 1.4-6.4-4.9-4.4 6.5-.7z" fill="#fff" opacity=".9"/></svg><b>自分の 新ベスト！</b></div>` : ''}
       ${evolved ? `<div class="petup evo">${critter(PETS[S.pet.kind], petStage())}<b>${PETS[S.pet.kind].name}が 進化した！</b></div>`
         : levelUp ? `<div class="petup">${critter(PETS[S.pet.kind], petStage())}<b>${PETS[S.pet.kind].name} レベルアップ！ <span>レベル ${playDays().length + 1}</span></b></div>` : ''}
-      ${cleared ? '<div class="banner">7日 クリア！ ふく習は 2〜3週間後</div>' : ''}
+      ${titleUp ? `<div class="banner gold">${titleUp.icon} しょう号が「${titleUp.name}」に 上がった！</div>` : ''}
+      ${cleared ? `<div class="banner">7日 クリア！ ふく習は ${md(addDays(c.finishedAt, REVIEW_FROM))}ごろ（おうちの人に 言っておこう）</div>` : ''}
       ${rewardNow ? `<div class="banner gold">ごほうび ゲット！ ${esc(S.settings.reward || 'おうちの人に 見せよう！')}</div>` : ''}
       <div class="res-top">${stamp}
         <div><p class="label">今日の しゅう回</p><p class="big">${lapsText(s.rowsDone, s.activeRows)}</p>
         ${grow ? `<p class="label">一番 のびた 行</p><p class="mid">${rowLabel(grow.r.row)} ▲${sec(grow.d)}秒</p>` : ''}</div>
       </div>
       ${msg ? `<p class="hint">${msg}</p>` : ''}
-      ${rows ? `<ol class="rowtimes">${rows}</ol>` : '<p class="hint">1行も 言いきれなかったよ。1行 言えたら ボタンを おそう。</p>'}
-      <figure class="chart small"><figcaption>しゅう回の グラフ（${s.mode === 'hide' ? 'かくして' : '見ながら'}・${minOf(s)}分）</figcaption>${barChart(c, s.mode, s.day, minOf(s))}</figure>
-      ${cand.length ? `<section class="cands"><h3>苦手 こうほ <small>タッチで ★（4回 言う）。1行 ${WEAK_MAX}こ まで</small></h3><div class="tiles">${cand.map(k => weakTile(c, k)).join('')}</div></section>` : ''}
-      <div class="actions">
+      <div class="actions first">
         ${bossOpen() ? btn('boss', '⚔ ボスが あらわれた！ ちょうせん', 'btn-main btn-boss') : ''}
         ${canQuiz() ? btn('quiz', `${hasMap() ? '🗾 クイズで 地図を ぬろう' : '❓ 言えるかな クイズ'}（${Math.min(QUIZ_N, quizPairs().length)}問）`, 'btn-main btn-quiz') : ''}
-        ${btn('home', 'ホームへ', canQuiz() ? 'btn-sub' : 'btn-main')}
-        <div class="row2">${btn('graph', 'くわしい グラフ')}</div>
+        ${btn('home', 'ホームへ', canQuiz() || bossOpen() ? 'btn-sub' : 'btn-main')}
       </div>
+      ${c.kind === 'main' ? `<section class="cands">${cand.length ? `<h3>苦手 こうほ <small>タッチで ★（4回 言う）。1行 ${WEAK_MAX}こ まで</small></h3><div class="tiles">${cand.map(k => weakTile(c, k)).join('')}</div>` : ''}
+        ${btn('marks', '★苦手・言える を じぶんで つける', 'btn-sub marksbtn')}</section>` : ''}
+      <details class="more"><summary>行の タイムと グラフ</summary>
+        ${rows ? `<ol class="rowtimes">${rows}</ol>` : '<p class="hint">1行も 言いきれなかったよ。1行 言えたら ボタンを おそう。</p>'}
+        <figure class="chart small"><figcaption>しゅう回の グラフ（${s.mode === 'hide' ? 'かくして' : '見ながら'}・${minOf(s)}分）</figcaption>${barChart(c, s.mode, s.day, minOf(s))}</figure>
+        <div class="row2">${btn('graph', 'くわしい グラフ')}</div>
+      </details>
     </main>`;
   };
 
+  // タッチするたびに なし → ★苦手 → 言える → なし。音読の あとに 自分で とばす物・苦手を ふやせる（D-93）
+  SCREENS.marks = function () {
+    const c = cur();
+    let h = '';
+    rowsOf(c).forEach((codes, i) => {
+      h += `<h3>${rowLabel(i)}</h3><div class="tiles">` + codes.map(k => {
+        const p = PAIR[k], m = mark(c, k);
+        return `<button type="button" class="tile ${m === 'known' ? 'known' : m === 'weak' ? 'weakt on' : ''}" data-act="cycleMark" data-code="${k}">
+          <span class="q">${rb(p.q)}</span><span class="a">${rb(ans(p))}</span>${m === 'weak' ? '<i class="star">★</i>' : m === 'known' ? '<i class="ok">言える ✓</i>' : ''}</button>`;
+      }).join('') + '</div>';
+    });
+    return `<header class="bar"><h2>しるしを つける</h2><p class="hint">タッチするたびに かわるよ：なし → <b>★苦手</b>（4回 言う）→ <b>言える</b>（とばす）→ なし。★は 1行に ${WEAK_MAX}こ まで。</p></header>
+      <main class="check">${h}</main>
+      <footer class="dock">${btn('marksDone', 'これで OK', 'btn-main')}</footer>`;
+  };
   SCREENS.weak = function () {
     const c = cur();
     let h = '';
@@ -2132,7 +2207,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     let lastLabel = '';
     items.forEach((it, i) => {
       const x = L + 4 + slot * i + (slot - bw) / 2, v = lapsOf(it.s);
-      if (it.sep) g += `<line x1="${x - (slot - bw) / 2}" x2="${x - (slot - bw) / 2}" y1="${T - 8}" y2="${H - B}" class="sep"/><text x="${x - (slot - bw) / 2 + 3}" y="${T - 10}" class="sept">しるし かえた</text>`;
+      if (it.sep) g += `<line x1="${x - (slot - bw) / 2}" x2="${x - (slot - bw) / 2}" y1="${T - 8}" y2="${H - B}" class="sep"/><text x="${x - (slot - bw) / 2 + 3}" y="${T - 10}" class="sept">★を かえた</text>`;
       g += `<rect x="${x}" y="${y(v)}" width="${bw}" height="${Math.max(1.5, H - B - y(v))}" rx="3" class="${it.off && !it.s.partial ? 'bar-off' : 'bar-prac'} ${it.day === hiDay ? 'hi' : ''}"/>`;
       g += `<text x="${x + bw / 2}" y="${y(v) - 5}" class="val" text-anchor="middle">${v.toFixed(1)}</text>`;
       if (it === bestOff) g += `<text x="${x + bw / 2}" y="${y(v) - 19}" class="star" text-anchor="middle">★</text>`;
@@ -2189,11 +2264,10 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     else {
       const items = dayItems(c, mode, gmin);
       const first = items[0], lastI = items[items.length - 1];
-      const same = first.s.tableSig === lastI.s.tableSig;
       const gain = lapsOf(lastI.s) - lapsOf(first.s);
       body = `
         ${mtabs}<figure class="chart"><figcaption>しゅう回・${gmin}分（高いほど 速い）</figcaption>${barChart(c, mode, null, gmin)}</figure>
-        <p class="gain">${items.length > 1 && same ? (gain > 0.04 ? `はじめより <b>${gain.toFixed(1)}しゅう</b> ふえたよ！` : 'つづけると グラフが のびるよ。') : 'あしたの 記ろくと くらべよう。'}</p>
+        <p class="gain">${items.length > 1 ? (gain > 0.04 ? `はじめより <b>${gain.toFixed(1)}しゅう</b> ふえたよ！` : 'つづけると グラフが のびるよ。') : 'あしたの 記ろくと くらべよう。'}</p>
         ${ui.showTime ? `<figure class="chart"><figcaption>10ペアあたりの タイム（ひくいほど 速い）</figcaption>${lineChart(c, mode)}</figure>` : ''}
         <div class="row2">${btn('gtime', ui.showTime ? 'タイムを とじる' : 'タイムも 見る')}</div>`;
     }
@@ -2621,15 +2695,32 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       }
       go('pick', { pickSubj: null });
     },
-    pickGo: () => { hideOverlay(); go('pick', { pickSubj: null }); },
+    pickGo: () => { hideOverlay(); ui.result = null; go('pick', { pickSubj: null }); },
     ovClose: () => hideOverlay(),
+    ovMarks: () => { hideOverlay(); go('marks'); },
+    reviewDs: d => {   // 別の表の ふく習。終わったら 今週の 表に もどれるように 覚えておく
+      if (d.id !== DS.id) S.settings.returnDs = DS.id;
+      S.settings.ds = d.id; useDs(d.id); save(); ACT.review(d);
+    },
+    backDs: () => { const id = S.settings.returnDs; S.settings.returnDs = null; if (id && DATASETS[id]) { S.settings.ds = id; useDs(id); } save(); go('home'); },
+    marks: () => go('marks'),
+    marksDone: () => ui.result ? go('result') : go('home'),
+    cycleMark: d => {
+      const c = cur(), k = d.code, m = mark(c, k);
+      const row = rowsOf(c).find(r => r.includes(k)) || [];
+      let nx = m === 'n' ? 'weak' : m === 'weak' ? 'known' : 'n';
+      if (nx === 'weak' && row.filter(x => c.marks[x] === 'weak').length >= WEAK_MAX) nx = 'known';
+      if (nx === 'n') delete c.marks[k]; else c.marks[k] = nx;
+      if (!activeRows(c).length) { if (m === 'n') delete c.marks[k]; else c.marks[k] = m; return toast('全部を「言える」には できないよ'); }
+      save(); rerenderKeepScroll();
+    },
     petPick: () => go('petpick'),
     petSet: d => { S.pet = { kind: d.k, at: today() }; save(); go('home'); setTimeout(() => { SND.fanfare(); confetti(); }, 150); },
     mons: () => go('mons'),
     pickDs: d => { S.settings.ds = d.id; useDs(d.id); save(); ui.result = null; go('home'); },
     ikenOff: d => { S.settings.iken = d.v === '1'; save(); rerenderKeepScroll(); },
     parent: () => go('parent'),
-    graph: () => go('graph', { graphCycle: ui.result ? ui.result.s.cycleId : null, graphMode: (ui.result && ui.result.s.mode) || ui.graphMode || 'look', graphMin: ui.result ? minOf(ui.result.s) : null, result: null }),
+    graph: () => go('graph', { graphCycle: ui.result ? ui.result.s.cycleId : null, graphMode: (ui.result && ui.result.s.mode) || ui.graphMode || (cur() && sessionsOf(cur()).slice(-1).map(x => x.mode)[0]) || 'look', graphMin: ui.result ? minOf(ui.result.s) : null, result: null }),
     gmode: d => go('graph', { graphMode: d.mode }),
     gmin: d => go('graph', { graphMin: +d.v }),
     gcycle: d => go('graph', { graphCycle: d.id }),
@@ -2643,19 +2734,19 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     quizSkip: () => quizSkip(),
     boss: () => startBoss(),
     mapview: () => go('mapview', { mapSel: null }),
-    review: () => {
-      const c = cur();
+    review: d => {
+      const c = (d && d.c && cycleById(d.c)) || lastMain() || cur();
       const weak = Object.keys(c.marks).filter(k => c.marks[k] === 'weak');
       const peeked = new Set();
       sessionsOf(c).forEach(s => s.peeks.forEach(k => peeked.add(k)));
-      const want = new Set([...weak, ...peeked, ...(c.notYet || [])]);
+      const want = new Set([...weak, ...peeked, ...(c.notYet || []), ...quizMissed(c)]);
       let codes = ALL.filter(k => want.has(k) && c.marks[k] !== 'known');
       if (codes.length < PER_ROW) {     // 1行に満たなければコード順で足す
         const fill = ALL.filter(k => !codes.includes(k) && c.marks[k] !== 'known');
         codes = ALL.filter(k => codes.includes(k) || fill.slice(0, PER_ROW - codes.length).includes(k));
       }
       if (!codes.length) codes = ALL.slice(0, PER_ROW);
-      newCycle('review', codes, {}, []);
+      const rc = newCycle('review', codes, {}, []); rc.baseId = c.id; save();
       audioUnlock();
       go('mode');
     },
