@@ -2611,35 +2611,37 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     b.classList.remove('peek'); clearTimeout(peekTimers.get(b));
     if (b._pop) { b._pop.remove(); b._pop = null; }
   }
+  // 7日を 始める：はじめに 言えるチェックは 出さない（「なにこれ？ わかんない！」で やめかけた。D-96）。
+  // 言えるものは 音読の あとに けっか画面の「しるしを つける」で とばす（D-93）
+  function startMain(marks) {
+    newCycle('main', ALL.slice(), marks || {}, []);
+    audioUnlock();
+    go('mode');
+  }
   const ACT = {
     home: () => { ui.result = null; go('home'); },
     start: () => {
       audioUnlock();
       const c = cur();
-      if (!c) return go(S.settings.seenIntro ? 'check' : 'intro', { step: 0, draft: {}, remark: false });
+      if (!c) return S.settings.seenIntro ? startMain() : go('intro', { step: 0 });
       go('mode');
     },
     introNext: () => go('intro', { step: (ui.step || 0) + 1 }),
-    introDone: () => { S.settings.seenIntro = true; save(); go('check', { draft: ui.draft || {} }); },
+    introDone: () => { S.settings.seenIntro = true; save(); startMain(); },
     ckFlip: d => { ui.draft[d.code] = 'flip'; rerenderKeepScroll(); },
     ckYes: d => { ui.draft[d.code] = 'known'; rerenderKeepScroll(); },
     ckNo: d => { ui.draft[d.code] = 'notyet'; rerenderKeepScroll(); },
     checkDone: () => {
       const known = Object.keys(ui.draft).filter(k => ui.draft[k] === 'known');
       const notYet = Object.keys(ui.draft).filter(k => ui.draft[k] === 'notyet');
-      if (ui.remark) {
+      if (ui.remark) {   // 言えるチェックは おうちの人の「言える を直す」だけ（D-96）
         const c = cur();
         Object.keys(c.marks).forEach(k => { if (c.marks[k] === 'known') delete c.marks[k]; });
         known.forEach(k => { c.marks[k] = 'known'; });
         c.notYet = uniq([...(c.notYet || []).filter(k => !known.includes(k)), ...notYet]);
         save(); ui.remark = false; return go('parent');
       }
-      const marks = {};
-      known.forEach(k => { marks[k] = 'known'; });
-      if (ui.carryWeak) Object.keys(ui.carryWeak).forEach(k => { if (!marks[k]) marks[k] = 'weak'; });
-      newCycle('main', ALL.slice(), marks, notYet);
-      ui.carryWeak = null;
-      go('mode');
+      go('home');
     },
     mode: d => beginRun(d.mode),
     next: () => tapNext(),
@@ -2751,12 +2753,9 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       audioUnlock();
       go('mode');
     },
-    again: () => {
+    again: () => {   // 前の7日の しるし（言える・★）を そのまま 引きつぐ
       const main = lastMain();
-      const draft = {}, weak = {};
-      if (main) Object.keys(main.marks).forEach(k => { if (main.marks[k] === 'known') draft[k] = 'known'; else weak[k] = 1; });
-      ui.carryWeak = weak;
-      go('check', { draft, remark: false });
+      startMain(main ? Object.assign({}, main.marks) : {});
     },
     remark: () => {
       const c = cur(), d = {};
