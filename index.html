@@ -384,44 +384,44 @@ body.print-preview .page { width: 210mm; height: 297mm; padding: 8mm; box-sizing
 #print * { box-sizing: border-box; }
 .page { height: 280mm; break-after: page; display: flex; flex-direction: column; gap: 2.5mm; overflow: hidden; }
 .page:last-child { break-after: auto; }
-.ph { display: flex; flex-wrap: wrap; align-items: center; gap: 2mm 3mm; border-bottom: .6mm solid #111; padding-bottom: 1.5mm; }
-.chap { width: 15mm; height: 15mm; border-radius: 50%; background: #F08A24; color: #fff; display: grid; place-items: center; font-family: var(--round); font-weight: 900; font-size: 9pt; line-height: 1.1; text-align: center; flex: none; }
-.tt { display: flex; flex-direction: column; flex: 1 0 auto; }
-.tt small { font-size: 8pt; color: #555; }
-.tt b { font-family: var(--round); font-weight: 900; font-size: 16pt; line-height: 1.2; white-space: nowrap; }
-.pkind { border: .3mm solid #111; color: #111; padding: 0 1.5mm; border-radius: 1mm; }
-.days { display: flex; gap: 1mm; }
-.day { width: 10.5mm; border: .3mm solid #111; border-radius: 1mm; text-align: center; font-size: 7pt; line-height: 1.2; padding: .6mm 0; }
-.day b { font-size: 11pt; font-family: var(--round); }
-.day em { display: block; font-style: normal; border-top: .2mm dashed #999; margin-top: .6mm; padding-top: .8mm; height: 5mm; color: #999; }
-.day.rev { width: 13mm; background: #FFF4E5; } .day.rev b { font-size: 8pt; display: block; padding: 1.3mm 0 .9mm; }
-.pname { font-size: 9pt; white-space: nowrap; }
-.pname span { display: inline-block; width: 24mm; border-bottom: .3mm solid #111; height: 5mm; }
-.how { font-size: 8.5pt; display: flex; flex-wrap: wrap; gap: 1mm 5mm; color: #333; }
-.how b { color: #111; }
-.cols { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; min-height: 0; align-items: start; }
-.col { display: flex; flex-direction: column; gap: 2mm; min-width: 0; }
-.grp { border: .35mm solid #111; }
-.gh { background: #333; color: #fff; font-size: 8pt; padding: .3mm 2mm; } .gh b { font-size: 10pt; margin-right: .5mm; }
-.band { display: flex; border-top: .25mm solid #999; break-inside: avoid; }
-.gh + .band { border-top: 0; }
-.mk { width: 10mm; flex: none; border-right: .25mm solid #bbb; display: flex; align-items: center; justify-content: center; gap: .8mm; }
-.box { width: 3.4mm; height: 3.4mm; border: .3mm solid #111; display: block; }
-.star { font-style: normal; font-size: 8.5pt; line-height: 1; color: #555; }
-.body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.top { display: flex; align-items: flex-end; gap: 2.5mm; background: #FDE3C8; padding: .3mm 2mm 0; font-size: var(--fs); }
-.no { font-size: 6.5pt; color: #8a5a2b; width: 4mm; flex: none; padding-bottom: 1.2mm; }
-.q { font-weight: 700; line-height: 1.7; width: var(--qw); flex: none; white-space: nowrap; }
-.a { color: #F06A3A; font-weight: 700; line-height: 1.7; white-space: nowrap; flex: 1; min-width: 0; }
-.a.blank { min-height: 1.75em; border-bottom: .2mm dashed #bbb; margin-bottom: 1mm; }
-.q rt, .a rt { font-size: max(5pt, .45em); font-weight: 400; }
-.pband.stack .q, .pband.stack .a { line-height: 1.55; }
-.pband.stack .top { flex-wrap: wrap; }
-.pband.stack .q { width: auto; flex: 1 1 calc(100% - 7mm); }
-.pband.stack .a { flex: 1 1 100%; padding-left: 6.5mm; }
-.hint { font-size: 8pt; color: #666; padding: .2mm 2mm .5mm 8.5mm; line-height: 1.75; }
-.hint rt { font-size: 4.5pt; }
-.pfoot { margin: 0; font-size: 8pt; color: #333; }
+#print .ph { display: flex; flex-wrap: wrap; align-items: center; gap: 2mm 3mm; border-bottom: .6mm solid #111; padding-bottom: 1.5mm; }
+#print .chap { width: 15mm; height: 15mm; border-radius: 50%; background: #F08A24; color: #fff; display: grid; place-items: center; font-family: var(--round); font-weight: 900; font-size: 9pt; line-height: 1.1; text-align: center; flex: none; }
+#print .tt { display: flex; flex-direction: column; flex: 1 0 auto; }
+#print .tt small { font-size: 8pt; color: #555; }
+#print .tt b { font-family: var(--round); font-weight: 900; font-size: 16pt; line-height: 1.2; white-space: nowrap; }
+#print .pkind { border: .3mm solid #111; color: #111; padding: 0 1.5mm; border-radius: 1mm; }
+#print .days { display: flex; gap: 1mm; }
+#print .day { width: 10.5mm; border: .3mm solid #111; border-radius: 1mm; text-align: center; font-size: 7pt; line-height: 1.2; padding: .6mm 0; }
+#print .day b { font-size: 11pt; font-family: var(--round); }
+#print .day em { display: block; font-style: normal; border-top: .2mm dashed #999; margin-top: .6mm; padding-top: .8mm; height: 5mm; color: #999; }
+#print .day.rev { width: 13mm; background: #FFF4E5; } #print .day.rev b { font-size: 8pt; display: block; padding: 1.3mm 0 .9mm; }
+#print .pname { font-size: 9pt; white-space: nowrap; }
+#print .pname span { display: inline-block; width: 24mm; border-bottom: .3mm solid #111; height: 5mm; }
+#print .how { font-size: 8.5pt; display: flex; flex-wrap: wrap; gap: 1mm 5mm; color: #333; }
+#print .how b { color: #111; }
+#print .cols { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; min-height: 0; align-items: start; }
+#print .col { display: flex; flex-direction: column; gap: 2mm; min-width: 0; }
+#print .grp { border: .35mm solid #111; }
+#print .gh { background: #333; color: #fff; font-size: 8pt; padding: .3mm 2mm; } #print .gh b { font-size: 10pt; margin-right: .5mm; }
+#print .band { display: flex; border-top: .25mm solid #999; break-inside: avoid; }
+#print .gh + .band { border-top: 0; }
+#print .mk { width: 10mm; flex: none; border-right: .25mm solid #bbb; display: flex; align-items: center; justify-content: center; gap: .8mm; }
+#print .box { width: 3.4mm; height: 3.4mm; border: .3mm solid #111; display: block; }
+#print .star { font-style: normal; font-size: 8.5pt; line-height: 1; color: #555; }
+#print .body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+#print .top { display: flex; align-items: flex-end; gap: 2.5mm; background: #FDE3C8; padding: .3mm 2mm 0; font-size: var(--fs); }
+#print .no { font-size: 6.5pt; color: #8a5a2b; width: 4mm; flex: none; padding-bottom: 1.2mm; }
+#print .q { font-weight: 700; line-height: 1.7; width: var(--qw); flex: none; white-space: nowrap; }
+#print .a { color: #F06A3A; font-weight: 700; line-height: 1.7; white-space: nowrap; flex: 1; min-width: 0; }
+#print .a.blank { min-height: 1.75em; border-bottom: .2mm dashed #bbb; margin-bottom: 1mm; }
+#print .q rt, #print .a rt { font-size: max(5pt, .45em); font-weight: 400; }
+#print .pband.stack .q, #print .pband.stack .a { line-height: 1.55; }
+#print .pband.stack .top { flex-wrap: wrap; }
+#print .pband.stack .q { width: auto; flex: 1 1 calc(100% - 7mm); }
+#print .pband.stack .a { flex: 1 1 100%; padding-left: 6.5mm; }
+#print .hint { font-size: 8pt; color: #666; padding: .2mm 2mm .5mm 8.5mm; line-height: 1.75; }
+#print .hint rt { font-size: 4.5pt; }
+#print .pfoot { margin: 0; font-size: 8pt; color: #333; }
 
 /* 高さの低い画面（iPhone SE・Safari のバーが出ているとき）：上を1行に、ボタンと余白を詰める（D-63） */
 @media (max-height: 760px) and (orientation: portrait) {
@@ -536,6 +536,22 @@ body.print-preview .page { width: 210mm; height: 297mm; padding: 8mm; box-sizing
 .wk-d b { font-family: var(--round); font-size: 34px; color: var(--rail); }
 .weekcard .rail { margin-top: 8px; }
 .weekcard .daynote { font-size: 16px; margin: 8px 0; }
+.tq { margin: 0 0 6px; font-family: var(--round); font-weight: 900; font-size: 22px; }
+.tchips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 420px; margin: 0 auto; }
+.tchip { min-height: 60px; border: 2px solid var(--line); border-radius: 10px; background: var(--sheet); display: grid; place-items: center; padding: 4px; }
+.tchip b { font-size: 20px; } .tchip small { font-size: 12px; color: var(--ink-2); }
+.tchip[aria-pressed="true"] { border-color: var(--answer); box-shadow: inset 0 0 0 2px var(--answer); }
+.tbonus, .autow { margin: 8px auto; max-width: 480px; padding: 8px 12px; border-radius: 10px; background: var(--sheet); border: 2px dashed var(--gold); text-align: center; }
+.autow { border-color: var(--answer); }
+.wk-chg { margin: 0 0 6px; text-align: right; }
+.linkbtn { background: none; border: 0; padding: 6px 2px; min-height: 0; color: var(--ink-2); font-size: 14px; text-decoration: underline; cursor: pointer; }
+.cdhow { margin: 6px auto; max-width: 420px; padding: 8px 14px; border: 3px solid var(--answer); border-radius: 12px; background: var(--sheet); }
+.cdhow p { margin: 0; }
+.cdh { font-family: var(--round); font-weight: 900; font-size: 24px; }
+.cdh b { color: var(--answer); font-size: 34px; }
+.cds { font-size: 22px; font-weight: 700; line-height: 1.9; }
+.cds rt { font-size: 11px; }
+.cdn { font-size: 14px; color: var(--ink-2); }
 .pickrow { margin-top: 12px; }
 .petpick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 16px; }
 .petopt { background: var(--sheet); border: 2px solid var(--ink); border-radius: 12px; padding: 8px 4px; font: inherit; color: var(--ink); cursor: pointer; }
@@ -1371,7 +1387,9 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
    設計：docs/DESIGN.md v2 ／ 決定：DECISIONS.md */
 (function () {
   const KEY = 'ondoku.v1';
-  const MINUTES = [3, 5, 10];     // 1回の時間（おうちの人が選ぶ。はじめは5分。D-69）
+  const MINUTES = [3, 5, 10];     // 1回の時間（はじめは5分。D-69。音読の前に 子どもも えらべる。D-109）
+  const TIME_BONUS = { 3: 0, 5: 1, 10: 3 };   // さい後まで やると ザコ ボーナス（長く やるほど とく。D-109）
+  const PICK_TOP = 3;              // ドリルえらびで はじめに 見せる 数（D-108）
   const OK_MISS = 'まちがえても、かんでも、止まらずに つづけて OK！';   // プライドで止めてしまう子へ（D-84）
   const OLD_MIN = 10;            // 時間を選べるようになる前の記録は10分
   const durMs = () => S.settings.minutes * 60 * 1000;
@@ -1527,16 +1545,19 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     });
     return m;
   }
+  // 前の自分：同じ ドリル・モード・行なら、★や「言える」が かわっても 読む量で ならして 出す（★が 自動で かわるため。D-109）
+  const looseKey = k => k.split('|').filter((_, i) => i !== 3).join('|');
   function lastTimes() {
     const m = {};
-    S.sessions.forEach(s => s.rows.forEach(r => { if (bestable(r)) m[r.key] = r.ms; }));
+    S.sessions.forEach(s => s.rows.forEach(r => { if (!r.long && r.load) m[looseKey(r.key)] = r; }));   // のぞいた行も 前の自分に する（かくして で 出なくなっていた。D-109）。自己ベストは のぞかない行だけ
     return m;
   }
   const sec = ms => (ms / 1000).toFixed(1);
-  // 前の自分：今日のこの行の直前の記録、なければ前の回の記録（同じ条件の行だけ。D-71）
-  function ghostMs(key) {
-    const prevToday = R ? [...R.rows].reverse().find(x => x.key === key && bestable(x)) : null;
-    return prevToday ? prevToday.ms : lastTimes()[key] || null;
+  // 前の自分：今日のこの行の直前の記録、なければ前の回の記録（D-71）
+  function ghostMs(key, load) {
+    const lk = looseKey(key);
+    const prev = (R ? [...R.rows].reverse().find(x => looseKey(x.key) === lk && !x.long && x.load) : null) || lastTimes()[lk];
+    return prev ? Math.round(prev.ms * (load || prev.load) / prev.load) : null;
   }
   const TITLES = [
     { r: 0, name: '歩き', icon: '🚶' }, { r: 1.1, name: '自転車', icon: '🚲' },
@@ -1898,7 +1919,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       <p class="bn">${b.name}${b.up ? '<small>（パワーアップ）</small>' : ''}</p><p class="bhp">強さ <b>${b.hp}</b></p>
       ${masterCount() ? `<p class="bnote">🏆 マスター ${masterCount()}こ で 強さ +${masterCount() * MASTER_POW}</p>` : ''}
       <p class="bteam">チームの 強さ <b>${tp}</b>${tp >= b.hp ? '　勝てそう！' : `　あと ${b.hp - tp}`}</p>
-      ${open ? btn('boss', '⚔ ちょうせん！', 'btn-main') : '<p class="bnote">表を 7日 クリアすると ちょうせん できるよ</p>'}</div></section>`;
+      ${open ? btn('boss', '⚔ ちょうせん！', 'btn-main') : '<p class="bnote">ドリルを 7日 クリアすると ちょうせん できるよ</p>'}</div></section>`;
   }
   function startBoss() {
     if (!bossOpen()) return go('home');
@@ -1928,7 +1949,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const z = ui.bt, b = bossOf(z.k);
     const dmg = z.team.slice(0, z.step).reduce((a, t) => a + t.pow, 0), left = Math.max(0, b.hp - dmg);
     const end = z.end ? (z.win
-      ? `<p class="end">${b.name}を たおした！</p><p class="hint">次の 表を 7日 クリアすると、次の ボスが 来るよ</p>`
+      ? `<p class="end">${b.name}を たおした！</p><p class="hint">次の ドリルを 7日 クリアすると、次の ボスが 来るよ</p>`
       : `<p class="end">おしい！ あと <b>${b.hp - dmg}</b></p><p class="hint">音読と クイズで なかまを ふやすと、チームが 強く なるよ。いつでも また ちょうせん できる！</p>`) : '';
     return `<main class="center bossfight">
       <p class="bt">${b.name}${b.up ? '（パワーアップ）' : ''}</p>
@@ -1957,7 +1978,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
           <p class="lead">今日から <b>7日間</b>。<br>1日 <b>${S.settings.minutes}分</b>、声に 出して<br>速く 言うだけ。</p>
           <div class="sample">${rb(PAIR[ALL[0]].q)}・${rb(PAIR[ALL[0]].a)}・${rb(PAIR[ALL[0]].q)}・${rb(PAIR[ALL[0]].a)}</div>
         </section>
-        <div class="row2">${btn('table', '表を見る')}${btn('pick', '📚 表を かえる')}</div>
+        <div class="row2">${btn('table', '📖 ドリルを 見る')}${btn('pick', '📚 ドリルを えらぶ')}</div>
         ${S.mons.length ? `<div class="row2">${btn('mons', `🐾 図かん ${uniq(S.mons.map(m => m.sp)).length}/${MONS.length}`)}</div>` : ''}`;
     } else if (c.kind === 'main' && !c.finishedAt) {
       const dn = dayNumber(c), doneToday = daysOf(c).includes(today());
@@ -1970,25 +1991,26 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
           ${quizBtn}
         </div>
         <section class="weekcard">
-          <p class="wk-t">今週の 表</p><p class="wk-name">${esc(DS.title)}</p>
+          <p class="wk-t">今週の ドリル</p><p class="wk-name">${esc(DS.title)}</p>
           <p class="wk-d"><b>${doneToday ? daysOf(c).length : dn}日め</b> / ${DAYS}日</p>
           ${rail(c)}
-          <p class="daynote">${doneToday ? '今日の 音読は 終わったよ！ もう1回 やっても いいよ' : '7日 同じ 表で おぼえよう'}</p>
+          <p class="daynote">${doneToday ? '今日の 音読は 終わったよ！ もう1回 やっても いいよ' : '7日 同じ ドリルで おぼえよう'}</p>
+          <p class="wk-chg"><button type="button" class="linkbtn" data-act="pick">ほかの ドリルに する ›</button></p>
         </section>
         <dl class="mini">
           ${last ? `<div><dt>前の 記ろく</dt><dd>${lapsText(last.rowsDone, last.activeRows)}<small>（${minOf(last)}分）</small> <span class="tag ${last.official ? 'tag-off' : ''}">${last.official ? '公式' : '練習'}</span></dd></div>` : ''}
           <div><dt>しょう号</dt><dd>${t ? `${t.t.icon} ${t.t.name}${raw && raw.next && raw.t === t.t ? `<small class="tnext">${raw.next.t.icon}まで あと ${raw.next.need.toFixed(1)}しゅう</small>` : ''}` : '<span class="muted">公式 記ろくで 決まるよ</span>'}</dd></div>
           <div><dt>ごほうびまで</dt><dd>${S.rewardShown.includes(c.id) ? 'ゲット！' : `公式の日 <b>${od}</b> / ${need}`}</dd></div>
         </dl>
-        <div class="row2">${btn('pick', '📚 表を かえる')}${btn('mons', `🐾 図かん ${uniq(S.mons.map(m => m.sp)).length}/${MONS.length}`)}</div>
-        <div class="row2">${btn('graph', 'グラフ')}${btn('table', '表を見る')}</div>
+        <div class="row2">${btn('mons', `🐾 図かん ${uniq(S.mons.map(m => m.sp)).length}/${MONS.length}`)}${btn('graph', 'グラフ')}</div>
+        <div class="row2">${btn('table', '📖 ドリルを 見る')}</div>
         ${painted() ? btn('mapview', `🗾 日本地図 ${painted()} / 47`, 'btn-sub mapbtn') : ''}`;
     } else if (c.kind === 'main') {
       const from = addDays(c.finishedAt, REVIEW_FROM), to = addDays(c.finishedAt, REVIEW_TO);
       const dueNow = today() >= from, t = titleFor(c);
       body = `
         <div class="actions first">
-          ${dueNow ? btn('review', `▶ ふく習（${S.settings.minutes}分）`, 'btn-main') : btn('pickGo', '▶ 次の 表を えらぶ', 'btn-main')}
+          ${dueNow ? btn('review', `▶ ふく習（${S.settings.minutes}分）`, 'btn-main') : btn('pickGo', '▶ 次の ドリルを えらぶ', 'btn-main')}
           ${quizBtn}
         </div>
         <section class="clear">
@@ -1996,17 +2018,17 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
           <p class="wk-name">${esc(DS.title)}${t ? `　${t.t.icon} ${t.t.name}` : ''}</p>
           ${S.rewardShown.includes(c.id) ? `<p class="reward">ごほうび：<b>${esc(S.settings.reward || 'おうちの人に 見せよう！')}</b></p>` : ''}
           <p>ふく習は <b>${md(from)}〜${md(to)}</b> ごろ。その日に なったら ホームに 出るよ。</p>
-          ${dueNow ? '' : '<p class="muted">それまでは 次の 表を やろう。れんぞくも つづくよ！</p>'}
+          ${dueNow ? '' : '<p class="muted">それまでは 次の ドリルを やろう。れんぞくも つづくよ！</p>'}
         </section>
         <div class="row2">${btn('graph', 'グラフ')}${btn('mons', `🐾 図かん ${uniq(S.mons.map(m => m.sp)).length}/${MONS.length}`)}</div>
-        <div class="row2">${dueNow ? btn('pickGo', '次の 表を えらぶ') : btn('review', 'ふく習を 早めに やる')}${btn('again', 'この 表を もう1回 7日間')}</div>`;
+        <div class="row2">${dueNow ? btn('pickGo', '次の ドリルを えらぶ') : btn('review', 'ふく習を 早めに やる')}${btn('again', 'この ドリルを もう1回 7日間')}</div>`;
     } else {
       const ss = sessionsOf(c), back = S.settings.returnDs && S.settings.returnDs !== DS.id && DATASETS[S.settings.returnDs];
       body = `
         <div class="actions first">
-          ${ss.length && back ? btn('backDs', `▶ 今週の 表に もどる（${esc(back.title)}）`, 'btn-main') : ''}
+          ${ss.length && back ? btn('backDs', `▶ 今週の ドリルに もどる（${esc(back.title)}）`, 'btn-main') : ''}
           ${ss.length ? '' : btn('start', `▶ ふく習（${S.settings.minutes}分）`, 'btn-main')}
-          ${ss.length && !back ? btn('pickGo', '▶ 次の 表を えらぶ', 'btn-main') : ''}
+          ${ss.length && !back ? btn('pickGo', '▶ 次の ドリルを えらぶ', 'btn-main') : ''}
           ${quizBtn}
         </div>
         <section class="clear">
@@ -2082,9 +2104,14 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const subj = ui.pickSubj || DS.subject || 'shakai';
     const has = SUBJECTS.filter(([k]) => visibleDs().some(id => DATASETS[id].subject === k));
     const tabs = has.length > 1 ? `<div class="tabs subj" role="tablist">${has.map(([k, l]) => `<button type="button" role="tab" aria-selected="${k === subj}" data-act="pickSubj" data-v="${k}">${l}</button>`).join('')}</div>` : '';
-    const items = visibleDs().filter(id => (DATASETS[id].subject || 'shakai') === subj).map(item).join('');
-    return `<header class="bar"><h2>どの 表を やる？</h2><p class="hint">表ごとに 7日間 回すよ。</p>${tabs}</header>
-      <main class="pick">${items}</main>
+    const ids = visibleDs().filter(id => (DATASETS[id].subject || 'shakai') === subj);
+    // はじめは おすすめ 3つだけ（今の ドリル → と中の ドリル → まだ やっていない ドリル → クリアした ドリル）。いっぱい 見せると おどろく（D-108）
+    const rank = id => { const cs = cyclesOfDs(id), c = cs[cs.length - 1]; return id === DS.id ? 0 : !c ? 2 : c.finishedAt ? 3 : 1; };
+    const top = ui.pickAll ? ids : ids.map((id, i) => [rank(id), i, id]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, PICK_TOP).map(x => x[2]);
+    const items = ids.filter(id => top.includes(id)).map(item).join('');
+    const more = ids.length - top.length;
+    return `<header class="bar"><h2>どの ドリルに する？</h2><p class="hint">1つの ドリルを 7日間 つづけるよ。</p>${tabs}</header>
+      <main class="pick">${items}${more ? btn('pickMore', `ほかの ドリルも 見る（あと ${more}こ）`, 'btn-sub') : ''}</main>
       <footer class="dock">${btn('home', 'もどる', 'btn-sub')}</footer>`;
   };
 
@@ -2109,7 +2136,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     () => `<h2>${S.settings.minutes}分で 終わり</h2>
       <p>おぼえなくて いい。<br><b>速く 言う</b> ことだけ がんばろう。<br>速く 言えるほど おぼえて いるよ。</p>`,
     () => `<h2>読み方は 🔈で</h2>
-      <p>読めない 字が あったら、<br>ホームの「表を見る」で 🔈を おすと<br>読み方が 聞けるよ。</p>`
+      <p>読めない 字が あったら、<br>ホームの「ドリルを 見る」で 🔈を おすと<br>読み方が 聞けるよ。</p>`
   ];
   SCREENS.intro = function () {
     const i = ui.step || 0, last = i === INTRO.length - 1;
@@ -2150,7 +2177,9 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const c = cur(), rec = suggestHide(c);
     return `<main class="center">
       ${c.kind === 'review' ? '<p class="tagline">ふく習</p>' : ''}
-      <h2>どっちで やる？</h2>
+      <p class="tq">① 何分 やる？</p>
+      <div class="tchips">${MINUTES.map(v => `<button type="button" class="tchip" data-act="minsKid" data-v="${v}" aria-pressed="${S.settings.minutes === v}"><b>${v}分</b><small>${TIME_BONUS[v] ? `ザコ +${TIME_BONUS[v]}` : 'まずは ここから'}</small></button>`).join('')}</div>
+      <h2>② どっちで やる？</h2>
       <div class="modes">
         <button type="button" class="mode-btn" data-act="mode" data-mode="look"><b>見ながら</b><small>答えを 見て 言う</small></button>
         <button type="button" class="mode-btn ${rec ? 'rec' : ''}" data-act="mode" data-mode="hide"><b>かくして</b><small>答えを かくして 言う</small>${rec ? '<i>おすすめ</i>' : ''}</button>
@@ -2171,13 +2200,13 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   }
 
   SCREENS.countdown = function () {
-    return `<main class="center count"><p class="hint">${ui.cdText || ''}</p><div class="num" id="cd">3</div></main>`;
+    return `<main class="center count"><p class="hint">${ui.cdText || ''}</p>${ui.cdHow || ''}<div class="num" id="cd">3</div></main>`;
   };
 
   SCREENS.run = function () {
     const c = cycleById(R.cycleId);
     const ri = R.act[R.rowPos], info = rowInfo(c, ri);
-    R.ghost = ghostMs(rowKey(R.mode, info));
+    R.ghost = ghostMs(rowKey(R.mode, info), info.load);
     const lap = Math.floor(R.rows.length / R.act.length) + 1;
     const hide = R.mode === 'hide';
     const known = info.codes.filter(k => mark(c, k) === 'known').length;
@@ -2191,6 +2220,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const stations = R.act.map((r, i) => `<li class="${i < R.rowPos ? 'done' : ''} ${i === R.rowPos ? 'here' : ''}">${r + 1}</li>`).join('');
     let hint = '';
     if (!S.settings.seenRunHint) hint = '<p class="runhint">1行 言えたら ↓を おす</p>';
+    else if (!R.rows.length) hint = '<p class="runhint">どれも 2回 つづけて 言う</p>';   // 毎回 わすれないように（D-108）
     else if (hide && !S.settings.seenPeekHint) hint = '<p class="runhint">出ないときは ？に タッチして 見る</p>';
     if (!R.zk) { const hp = zakoHp(c, R.mode, R.act); R.zk = { hp, max: hp, n: 0 }; }   // 前の と中の 記ろくには ない
     const zd = zakoOf();
@@ -2268,17 +2298,17 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   async function lockScreen() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { } }
   function unlockScreen() { try { wakeLock && wakeLock.release(); } catch (e) { } wakeLock = null; }
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && cd && cd.waiting) { const c2 = cd; cd = null; countdown(c2.text, c2.done); return; }
+    if (document.visibilityState === 'visible' && cd && cd.waiting) { const c2 = cd; cd = null; countdown(c2.text, c2.done, c2.how); return; }
     if (!R) return;
     if (document.visibilityState === 'hidden' && R.since && R.phase === 'run') { pauseRun(); }   // 閉じていた間はタイマーを止める（D-19）
   });
   window.addEventListener('pagehide', () => { if (R && R.phase === 'run' && (R.since || R.elapsed > 0)) persistRun(); });   // 3・2・1 の前に閉じたら残さない
 
   let cd = null;   // 進行中のカウントダウン（裏に回ったら止めて、もどったら3からやり直す）
-  function countdown(text, done) {
+  function countdown(text, done, how) {
     if (cd) clearInterval(cd.iv);
-    cd = { text, done, iv: 0 };
-    go('countdown', { cdText: text });
+    cd = { text, done, iv: 0, how };
+    go('countdown', { cdText: text, cdHow: how || '' });
     if (document.visibilityState === 'hidden') { cd.waiting = true; return; }
     let n = 3;
     SND.count();
@@ -2288,21 +2318,25 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       const e = document.getElementById('cd');
       if (n > 0) { if (e) e.textContent = n; SND.count(); return; }
       clearInterval(cd.iv); const f = cd.done; cd = null; SND.go(); f();
-    }, 800);
+    }, 1000);
   }
   function beginRun(mode) {
     const c = cur();
     const act = activeRows(c);
-    if (!act.length) return showOverlay(`<h2>全部 言える！</h2><p>この 表は もう 全部 言えるね。<br>次の 表に すすもう。</p>
-      <div class="actions">${btn('pickGo', '▶ 次の 表を えらぶ', 'btn-main')}${btn('ovMarks', 'しるしを 見直す')}</div>`);
+    if (!act.length) return showOverlay(`<h2>全部 言える！</h2><p>この ドリルは もう 全部 言えるね。<br>次の ドリルに すすもう。</p>
+      <div class="actions">${btn('pickGo', '▶ 次の ドリルを えらぶ', 'btn-main')}${btn('ovMarks', 'しるしを 見直す')}</div>`);
     R = { id: uid(), cycleId: c.id, mode, dur: durMs(), day: today(), startedAt: new Date().toISOString(), elapsed: 0, since: null, lapStart: 0,
       rowPos: 0, act, tableSig: tableSig(c, mode, act), rows: [], peeks: [], curPeeks: [], phase: 'run', lastTap: 0, pausedMs: 0 };
     const hp = zakoHp(c, mode, act); R.zk = { hp, max: hp, n: 0 };
     const round = S.sessions.filter(s => s.day === today()).length + 1;   // 今日 何ラウンドめ
-    countdown(`${round > 1 ? `<b class="roundno">ラウンド ${round}！</b><br>` : ''}${mode === 'hide' ? 'かくして' : '見ながら'}・2回 つづけて 速く！<br>${OK_MISS}`, () => {
+    const k0 = rowInfo(c, act[0]).codes.find(k => mark(c, k) !== 'known') || ALL[0], p0 = PAIR[k0];
+    const how = `<section class="cdhow"><p class="cdh"><b>2回</b> つづけて 言う</p>
+      <p class="cds">${rb(p0.q)}・${mode === 'hide' ? '？' : rb(ans(p0))}<br>${rb(p0.q)}・${mode === 'hide' ? '？' : rb(ans(p0))}</p>
+      <p class="cdn">★は 4回。1行 言えたら ↓ボタン</p></section>`;
+    countdown(`${round > 1 ? `<b class="roundno">ラウンド ${round}！</b><br>` : ''}${mode === 'hide' ? 'かくして' : '見ながら'}・速く！　${OK_MISS}`, () => {
       R.since = Date.now(); R.lastTap = Date.now();
       lockScreen(); persistRun(); go('run');
-    });
+    }, how);
   }
   function tapNext() {
     if (!R || !R.since || R.phase !== 'run') return;
@@ -2320,8 +2354,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     }
     R.lastTap = now;
     const rec = { row: ri, ms, load: info.load, sig: info.sig, key: rowKey(R.mode, info), peeks: R.curPeeks.slice(), long: ms > info.load * LONG_MS };
-    const prevToday = [...R.rows].reverse().find(x => x.key === rec.key && bestable(x));
-    const ref = prevToday ? prevToday.ms : lastTimes()[rec.key];
+    const ref = ghostMs(rec.key, rec.load);
     R.rows.push(rec);
     R.lapStart = t; R.curPeeks = [];
     R.rowPos = (R.rowPos + 1) % R.act.length;
@@ -2398,12 +2431,33 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     </main>`;
   };
 
+  // かくして で のぞいた（出てこなかった）ものは 次から ★（4回）。自動で つけた ★は、のぞかずに 言えたら はずす（D-109）
+  function autoWeak(c, s) {
+    c.marks = c.marks || {}; c.autoWeak = c.autoWeak || [];
+    c.peekN = c.peekN || {};
+    s.peeks.forEach(k => { c.peekN[k] = (c.peekN[k] || 0) + 1; });
+    const readRows = new Set(s.rows.map(r => r.row));
+    c.autoWeak = c.autoWeak.filter(k => {   // 読んだ 行で のぞかなかったら はずす
+      const ri = Math.floor(c.pairCodes.indexOf(k) / PER_ROW);
+      if (readRows.has(ri) && !s.peeks.includes(k) && mark(c, k) === 'weak') { delete c.marks[k]; return false; }
+      return mark(c, k) === 'weak';
+    });
+    s.autoAdd = [];
+    s.peeks.forEach(k => {
+      if (mark(c, k) !== 'n' || !c.pairCodes.includes(k)) return;
+      const ri = Math.floor(c.pairCodes.indexOf(k) / PER_ROW);
+      const inRow = c.pairCodes.slice(ri * PER_ROW, ri * PER_ROW + PER_ROW).filter(x => mark(c, x) === 'weak').length;
+      if (inRow >= WEAK_MAX) return;
+      c.marks[k] = 'weak'; c.autoWeak.push(k); s.autoAdd.push(k);
+    });
+  }
   function commitSession(official, partial) {
     const c = cycleById(R.cycleId);
     const s = { id: R.id, cycleId: R.cycleId, day: R.day, startedAt: R.startedAt, mode: R.mode, official: !!official && !partial, partial: !!partial,
       durationMs: partial ? R.elapsed : R.dur, min: R.dur / 60000, pausedMs: R.pausedMs || 0, tableSig: R.tableSig,
       rows: R.rows, rowsDone: R.rows.length, activeRows: R.act.length, peeks: uniq(R.peeks),
-      zako: R.zk ? R.zk.n : 0, zakoLeft: R.zk ? +(R.zk.hp / R.zk.max).toFixed(2) : 1 };
+      bonus: partial ? 0 : TIME_BONUS[R.dur / 60000] || 0,
+      zako: (R.zk ? R.zk.n : 0) + (partial ? 0 : TIME_BONUS[R.dur / 60000] || 0), zakoLeft: R.zk ? +(R.zk.hp / R.zk.max).toFixed(2) : 1 };
     const prevBest = bests();
     const newBests = [], firsts = [];
     if (s.official) {
@@ -2421,6 +2475,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     S.sessions.push(s);
     S.inProgress = null;
     if (s.mode === 'hide') S.settings.seenPeekHint = true;
+    if (s.mode === 'hide' && c.kind === 'main' && !partial) autoWeak(c, s);
     let cleared = false, rewardNow = false;
     if (c.kind === 'main' && !c.finishedAt && daysOf(c).length >= DAYS) { c.finishedAt = new Date().toISOString(); cleared = true; }
     if (c.kind === 'main' && s.official && !S.rewardShown.includes(c.id) && officialDays(c) >= S.settings.rewardDays) { S.rewardShown.push(c.id); rewardNow = true; }
@@ -2508,6 +2563,8 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
         ${btn('home', 'ホームへ', canQuiz() || bossOpen() || roundOK ? 'btn-sub' : 'btn-main')}
       </div>
       ${zres}
+      ${s.bonus ? `<p class="tbonus">⏱ ${s.min}分 さい後まで！ ボーナス ザコ <b>+${s.bonus}</b>ひき</p>` : ''}
+      ${s.autoAdd && s.autoAdd.length ? `<p class="autow">出てこなかった <b>${s.autoAdd.length}こ</b> は、次から ★（4回 言う）に したよ。<br><small>のぞかずに 言えたら ★は きえるよ</small></p>` : ''}
       ${c.kind === 'main' ? `<section class="cands">${cand.length ? `<h3>苦手 こうほ <small>タッチで ★（4回 言う）。1行 ${WEAK_MAX}こ まで</small></h3><div class="tiles">${cand.map(k => weakTile(c, k)).join('')}</div>` : ''}
         ${btn('marks', '★苦手・言える を じぶんで つける', 'btn-sub marksbtn')}</section>` : ''}
       <details class="more"><summary>行の タイムと グラフ</summary>
@@ -2658,7 +2715,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
         <span class="mk">${m === 'known' ? '<i class="ok">言える</i>' : m === 'weak' ? '<i class="star">★</i>' : ''}</span>
         ${canSpeak ? `<button type="button" class="say" data-act="say" data-code="${k}" aria-label="${esc(plain(p.q))}の 読み方を 聞く">🔈</button>` : ''}</li>`;
     }).join('') + '</ol>').join('');
-    return `<header class="bar"><h2>表を 見る</h2><p class="hint">🔈で 読み方を たしかめられるよ。<br>音読の 間は 自分の 声で 言おう。</p></header>
+    return `<header class="bar"><h2>ドリルを 見る</h2><p class="hint">🔈で 読み方を たしかめられるよ。<br>音読の 間は 自分の 声で 言おう。</p></header>
       <main class="table">${h}</main><footer class="dock">${btn('home', 'ホームへ', 'btn-main')}</footer>`;
   };
 
@@ -2699,7 +2756,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       ${c && c.kind === 'main' ? `<section><h3>しるしの付け直し</h3><div class="row2">${btn('remark', '「言える」を直す')}${btn('weak', '「苦手★」を直す')}</div>
         <p class="small">しるしを変えた行は、自己ベストを新しく数えます。</p></section>` : ''}
       <section><h3>印刷（A4たて・2ページ）</h3>${btn('print', '印刷する')}
-        <p class="small">1枚め＝表、2枚め＝答えのない表（かくし読み用）、3枚め＝記録とグラフ。答えは朱色なので赤シートでも隠せます（白黒印刷なら2枚めを使ってください）。</p></section>
+        <p class="small">A4たて2枚。1枚め＝帯の表（上に1日め〜7日めの日づけ欄、ヒントのある表はヒント1行）、2枚め＝答えのない表（かくし読み用）。答えは朱色なので赤シートでも隠せます（白黒印刷なら2枚めを使ってください）。</p></section>
       <section><h3>記録の保存</h3>
         <p class="small">記録はこの端末のブラウザの中だけにあります。いまの記録：${S.sessions.length}回（公式${off}回）。保存の状態：${pstat}${storageOK ? '' : '。<b>保存に失敗しています</b>'}</p>
         ${standalone ? '' : '<p class="small"><b>iPhone・iPad：</b>Safari の共有ボタン → 「ホーム画面に追加」から開くと、記録が消えにくくなります。</p>'}
@@ -2934,7 +2991,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
           <p><b>${MONS[z.gift.mon.sp].name}</b>（${RARE[MONS[z.gift.mon.sp].r || 1]}）${stars(z.gift.mon.star)} が なかまに なった${z.gift.isNew ? '<br><b class="mnew">はじめて 会った！</b>' : ''}</p>
           <p class="small">チームの 強さも +${MASTER_POW}</p></section>` : ''}
         <p class="hint">おうちの人や 友だちに 見せよう！「問題を 出して！」で 出してもらうのも いいよ</p>
-        <div class="actions">${nx ? btn('pickDs', `▶ 次の 表へ（${esc(DATASETS[nx].title)}）`, 'btn-main', `data-id="${nx}"`) : ''}
+        <div class="actions">${nx ? btn('pickDs', `▶ 次の ドリルへ（${esc(DATASETS[nx].title)}）`, 'btn-main', `data-id="${nx}"`) : ''}
         <div class="row2">${btn('ask', '🎤 問題を 出して！')}${btn('certPrint', '🖨 いんさつ', 'btn-sub', `data-id="${DS.id}"`)}</div>
         ${btn('home', 'ホームへ', nx ? 'btn-sub' : 'btn-main')}</div></main>`;
     }
@@ -3199,6 +3256,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       go('home');
     },
     mode: d => beginRun(d.mode),
+    minsKid: d => { S.settings.minutes = +d.v; save(); render(); },
     next: () => tapNext(),
     pause: () => pauseRun(),
     unpause: () => unpause(),
@@ -3248,12 +3306,12 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     pick: () => {   // 7日の と中なら 1回 聞く（目うつり しないように。D-85）
       const c = cur();
       if (c && c.kind === 'main' && !c.finishedAt && daysOf(c).length > 0) {
-        return showOverlay(`<h2>表を かえる？</h2><p>今の 表は <b>${daysOf(c).length}日め</b> まで やったよ。<br>7日 おわるまで 同じ 表が よく おぼえられるよ。</p>
+        return showOverlay(`<h2>ドリルを かえる？</h2><p>今の ドリルは <b>${daysOf(c).length}日め</b> まで やったよ。<br>7日 おわるまで 同じ ドリルが よく おぼえられるよ。</p>
           <div class="actions">${btn('ovClose', 'このまま つづける', 'btn-main')}${btn('pickGo', 'それでも かえる')}</div>`);
       }
-      go('pick', { pickSubj: null });
+      go('pick', { pickSubj: null, pickAll: false });
     },
-    pickGo: () => { hideOverlay(); ui.result = null; go('pick', { pickSubj: null }); },
+    pickGo: () => { hideOverlay(); ui.result = null; go('pick', { pickSubj: null, pickAll: false }); },
     ovClose: () => hideOverlay(),
     ovMarks: () => { hideOverlay(); go('marks'); },
     reviewDs: d => {   // 別の表の ふく習。終わったら 今週の 表に もどれるように 覚えておく
@@ -3288,7 +3346,8 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     gtime: () => { ui.showTime = !ui.showTime; rerenderKeepScroll(); },
     table: () => go('table'),
     say: d => { const p = PAIR[d.code]; speak(`${p.q_say || kana(p.q)}、${p.a_say || kana(ans(p))}`); },   // 算数は読み用の欄（3/8→はちぶんのさん）
-    pickSubj: d => go('pick', { pickSubj: d.v }),
+    pickSubj: d => go('pick', { pickSubj: d.v, pickAll: false }),
+    pickMore: () => go('pick', { pickAll: true }),
     quiz: () => startQuiz(),
     master: () => startMaster(),
     masterGo: () => { ui.mt.startedAt = Date.now(); go('master'); },
