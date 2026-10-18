@@ -1664,7 +1664,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     if (ui.screen === 'run') { fitRun(); startTicker(); }
     if (S.settings.iken && !['run', 'countdown'].includes(ui.screen)) {
       const q = new URLSearchParams({ page: 'iken', screen: SCREEN_NAMES[ui.screen] || ui.screen, ds: DS.title, size: `${innerWidth}x${innerHeight}` });
-      app.insertAdjacentHTML('afterbegin', `<a class="iken" href="${IKEN_URL}?${q}" target="_blank" rel="noopener">おためし中：気づいたことを 書く ›</a>`);
+      app.insertAdjacentHTML('afterbegin', `<a class="iken" href="${IKEN_URL}?${q}">おためし中：気づいたことを 書く ›</a>`);
     }
   }
   function rerenderKeepScroll() { const y = window.scrollY; render(); window.scrollTo(0, y); }
