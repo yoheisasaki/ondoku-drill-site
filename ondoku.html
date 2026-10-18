@@ -1476,6 +1476,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   function rb(parts) { return parts.map(([t, r]) => r ? `<ruby>${esc(t)}<rt>${esc(r)}</rt></ruby>` : esc(t)).join(''); }
   function kana(parts) { return parts.map(([t, r]) => r || t).join(''); }   // ふりがなが空なら表記（さいたま）
   function plain(parts) { return parts.map(([t]) => t).join(''); }
+  const SEP = () => DS.subject === 'sansu' ? '＝' : '・';   // 算数は「1×1＝1」と書く（D-115 お母さん）
   const dsTitle = d => `<span class="dst">${esc((d || DS).title)}</span><span class="dsk">${esc((d || DS).title_kana || '')}</span>`;
   function tokyoNote(p) {
     if (DS.id !== 'prefectures' || p.code !== '13') return '';
@@ -1975,7 +1976,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
         <div class="actions first">${btn('start', '▶ 始める', 'btn-main')}</div>
         <section class="hero">
           <p class="lead">今日から <b>7日間</b>。<br>1日 <b>${S.settings.minutes}分</b>、声に 出して<br>速く 言うだけ。</p>
-          <div class="sample">${rb(PAIR[ALL[0]].q)}・${rb(PAIR[ALL[0]].a)}・${rb(PAIR[ALL[0]].q)}・${rb(PAIR[ALL[0]].a)}</div>
+          <div class="sample">${rb(PAIR[ALL[0]].q)}${SEP()}${rb(PAIR[ALL[0]].a)}${SEP()}${rb(PAIR[ALL[0]].q)}${SEP()}${rb(PAIR[ALL[0]].a)}</div>
         </section>
         <div class="row2">${btn('table', '📖 ドリルを 見る')}${btn('pick', '📚 ドリルを えらぶ')}</div>
         ${S.mons.length ? `<div class="row2">${btn('mons', `🐾 図かん ${uniq(S.mons.map(m => m.sp)).length}/${MONS.length}`)}</div>` : ''}`;
@@ -2126,7 +2127,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
 
   const INTRO = [
     () => `<h2>2回 つづけて 言う</h2>
-      <div class="sample big">${rb(PAIR[ALL[0]].q)}・${rb(PAIR[ALL[0]].a)}<br>${rb(PAIR[ALL[0]].q)}・${rb(PAIR[ALL[0]].a)}</div>
+      <div class="sample big">${rb(PAIR[ALL[0]].q)}${SEP()}${rb(PAIR[ALL[0]].a)}<br>${rb(PAIR[ALL[0]].q)}${SEP()}${rb(PAIR[ALL[0]].a)}</div>
       <p>言えたら すぐ 次の ペアへ。</p>`,
     () => `<h2>1行 言えたら ボタン</h2>
       <p>1行は ${PER_ROW}ペア。<br>さい後まで 言えたら、下の 大きい ボタンを おす。</p>
@@ -2212,7 +2213,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const lines = info.codes.filter(k => mark(c, k) !== 'known').map(k => {
       const p = PAIR[k], w = mark(c, k) === 'weak';
       return `<li class="${w ? 'weak' : ''}">
-        <span class="q">${rb(p.q)}</span><span class="sep">・</span>
+        <span class="q">${rb(p.q)}</span><span class="sep">${SEP()}</span>
         ${hide ? `<button type="button" class="a cover" data-act="peek" data-code="${k}" aria-label="のぞく">${rb(ans(p))}</button>` : `<span class="a">${rb(ans(p))}</span>`}
         <span class="times">${w ? '×4<i>★</i>' : '×2'}</span></li>`;
     }).join('');
@@ -2330,7 +2331,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const round = S.sessions.filter(s => s.day === today()).length + 1;   // 今日 何ラウンドめ
     const k0 = rowInfo(c, act[0]).codes.find(k => mark(c, k) !== 'known') || ALL[0], p0 = PAIR[k0];
     const how = `<section class="cdhow"><p class="cdh"><b>2回</b> つづけて 言う</p>
-      <p class="cds">${rb(p0.q)}・${mode === 'hide' ? '？' : rb(ans(p0))}<br>${rb(p0.q)}・${mode === 'hide' ? '？' : rb(ans(p0))}</p>
+      <p class="cds">${rb(p0.q)}${SEP()}${mode === 'hide' ? '？' : rb(ans(p0))}<br>${rb(p0.q)}${SEP()}${mode === 'hide' ? '？' : rb(ans(p0))}</p>
       <p class="cdn">★は 4回。1行 言えたら ↓ボタン</p></section>`;
     countdown(`${round > 1 ? `<b class="roundno">ラウンド ${round}！</b><br>` : ''}${mode === 'hide' ? 'かくして' : '見ながら'}・速く！　${OK_MISS}`, () => {
       R.since = Date.now(); R.lastTap = Date.now();
@@ -2710,7 +2711,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const h = rowsOf(c).map((codes, i) => `<h3>${rowLabel(i)} <small>${rowArea(codes)}</small></h3><ol class="tlist">` + codes.map(k => {
       const p = PAIR[k], m = mark(c, k);
       return `<li class="${m === 'known' ? 'known' : ''} ${m === 'weak' ? 'weak' : ''}">
-        <span class="q">${rb(p.q)}</span><span class="sep">・</span><span class="a">${rb(ans(p))}${tokyoNote(p)}</span>
+        <span class="q">${rb(p.q)}</span><span class="sep">${SEP()}</span><span class="a">${rb(ans(p))}${tokyoNote(p)}</span>
         <span class="mk">${m === 'known' ? '<i class="ok">言える</i>' : m === 'weak' ? '<i class="star">★</i>' : ''}</span>
         ${canSpeak ? `<button type="button" class="say" data-act="say" data-code="${k}" aria-label="${esc(plain(p.q))}の 読み方を 聞く">🔈</button>` : ''}</li>`;
     }).join('') + '</ol>').join('');
@@ -2954,8 +2955,10 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       const cls = fb ? (ansText(PAIR[c]) === ansText(p) ? 'right' : fb.pick === i ? 'wrong' : 'dim') : '';
       return `<button type="button" class="qch ${cls}" data-act="masterPick" data-v="${i}" ${fb ? 'disabled' : ''}>${rb(ans(PAIR[c]))}</button>`;
     }).join('');
-    const card = fb && !fb.ok ? `<div class="qcard ng" role="dialog"><div class="qtx"><p class="qres">おしい！</p><p class="qa">${rb(p.q)} → <b>${rb(ans(p))}</b></p></div>
-      ${btn('masterNext', z.i + 1 >= z.qs.length ? 'けっかを 見る' : '次の 問題 ▶', 'btn-main')}</div>` : '';
+    const to = DS.subject === 'sansu' ? '＝' : ' → ';
+    const card = fb && !fb.ok ? `<div class="qcard ng" role="dialog"><div class="qtx"><p class="qres">✕ おしい！</p><p class="qa">${rb(p.q)}${to}<b>${rb(ans(p))}</b></p></div>
+      ${btn('masterNext', z.i + 1 >= z.qs.length ? 'けっかを 見る' : '次の 問題 ▶', 'btn-main')}</div>`
+      : fb ? `<div class="qcard ok" role="status"><div class="qtx"><p class="qres">⭕ せいかい！</p><p class="qa">${rb(p.q)}${to}<b>${rb(ans(p))}</b></p></div></div>` : '';   // せいかいも その場で 見せる（D-115 お母さん）
     const pct = Math.round(z.i / z.qs.length * 100);
     return `<header class="qhead"><p class="qno">🏆 マスター テスト <b>${z.i + 1}</b> / ${z.qs.length}${z.miss.length ? `　<span class="mmiss">まちがい ${z.miss.length}</span>` : ''}</p>
         <div class="mbar"><i style="width:${pct}%"></i></div><p class="qq">${quizQuestion(p)}</p></header>
@@ -2966,7 +2969,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     if (!z || z.fb) return;
     const q = z.qs[z.i], p = PAIR[q.code], ok = ansText(PAIR[q.ch[i]]) === ansText(p);
     z.fb = { ok, pick: i };
-    if (ok) { z.ok++; SND.lap(); render(); setTimeout(() => { if (ui.mt === z && z.fb) { z.fb = null; z.i++; render(); } }, 450); }   // せいかいは テンポよく 次へ
+    if (ok) { z.ok++; SND.lap(); render(); setTimeout(() => { if (ui.mt === z && z.fb) { z.fb = null; z.i++; render(); } }, 900); }   // せいかいは テンポよく 次へ（見える 長さに。D-115）
     else { z.miss.push(q.code); SND.nope(); render(); }
   }
   SCREENS.masterEnd = function () {
@@ -3132,7 +3135,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const days = Array.from({ length: DAYS }, (_, i) => `<div class="day"><b>${i + 1}</b><span>日め</span><em>/</em></div>`).join('') + '<div class="day rev"><b>ふく習</b><em>/</em></div>';
     const head = kind => `<header class="ph"><div class="chap">${subj}<br>${N}こ</div><div class="tt"><small>ぐるぐる音読　<span class="pkind">${kind}</span></small><b>${esc(DS.title)}</b></div><div class="days">${days}</div><div class="pname">名前<span></span></div></header>`;
     const f0 = PAIR[ALL[0]];
-    const howto = `<div class="how"><span><b>①</b> 「${plain(f0.q)}・${plain(ans(f0))}」と <b>2回</b> 言う</span><span><b>②</b> 1日${S.settings.minutes}分、1行め→${rows}行め→1行め…と回す</span><span><b>③</b> 言えたら □に✓、苦手は ☆を ぬる</span><span><b>④</b> やった日は 上に 日づけ。7日 つづける</span>${hasHint ? '<span>うすい 字の 1行は ヒント（声に 出さない）</span>' : ''}</div>`;
+    const howto = `<div class="how"><span><b>①</b> 「${plain(f0.q)}${SEP()}${plain(ans(f0))}」と <b>2回</b> 言う</span><span><b>②</b> 1日${S.settings.minutes}分、1行め→${rows}行め→1行め…と回す</span><span><b>③</b> 言えたら □に✓、苦手は ☆を ぬる</span><span><b>④</b> やった日は 上に 日づけ。7日 つづける</span>${hasHint ? '<span>うすい 字の 1行は ヒント（声に 出さない）</span>' : ''}</div>`;
     const tokyo = S.settings.tokyo === 'shinjuku' ? '新宿区（地図帳では「東京」）' : '東京（都ちょうは新宿区）';
     const sheet = (withAns, kind, sub, foot) => `<section class="page pband${stack ? ' stack' : ''}" style="--fs:${fs}pt;--qw:${lq + .6}em">${head(kind)}${sub}<div class="cols">${col(0, half, withAns)}${col(half, N, withAns)}</div><p class="pfoot">${foot}</p></section>`;
     return sheet(true, '答えあり', howto, `答えは 赤い字：赤シートで かくして 言えるか ためす。白黒の ときは 2まいめで かくし読み。7日めの 2〜3週間後に ふく習。${DS.id === 'prefectures' ? `東京都の答え：${tokyo}` : ''}`)
