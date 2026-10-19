@@ -1,6 +1,7 @@
 /* ぐるぐる音読 Service Worker：オフラインで開けるようにする。ページは「ネット優先・だめなら保存分」、ほかは「保存分優先」 */
-const CACHE = 'guruguru-0a43d262ba';
-const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-180.png'];
+const CACHE = 'guruguru-04e57d435a';
+const ENTRY_PAGES = ['./kuku/', './boki3/'];   // 題材ごとの 入り口（./kuku/ など。build.py が data/index.json の entries から入れる。D-116・D-119）
+const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-180.png', ...ENTRY_PAGES];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
 });
@@ -20,7 +21,7 @@ self.addEventListener('fetch', e => {
       if (isApp && r.ok && (r.headers.get('content-type') || '').includes('text/html')) { const cp = r.clone(); caches.open(CACHE).then(c => c.put('./index.html', cp)); }
       return r;
     })
-      .catch(() => caches.match('./index.html')));
+      .catch(() => { const m = url.pathname.match(/\/([^/]+)\/(index\.html)?$/), ep = m && './' + m[1] + '/'; return caches.match(ep && ENTRY_PAGES.includes(ep) ? ep : './index.html'); }));   // 入り口の ページ（D-116・D-119）
     return;
   }
   e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(r => {
