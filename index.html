@@ -55,6 +55,9 @@ button, input { font: inherit; color: inherit; }
 button { cursor: pointer; }
 h1, h2, h3 { font-family: var(--round); font-weight: 900; line-height: 1.3; margin: 0; }
 ruby rt { font-family: var(--ud); font-weight: 400; ruby-align: center; }
+ruby rt b { font-weight: 900; font-size: 1.2em; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }   /* 英語の読み：強く読む所（大きく・濃く・下線） */
+ruby rt:has(b) { font-size: 0.6em; letter-spacing: .02em; white-space: nowrap; }
+ruby:has(rt b) { white-space: nowrap; overflow-wrap: normal; word-break: keep-all; }   /* 英単語は 途中で折り返さない */
 :focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
 .muted { color: var(--ink-2); }
 
@@ -392,9 +395,9 @@ button.trow:active { background: var(--paper-2); }
 .iken { display: flex; align-items: center; justify-content: center; min-height: 44px; margin: 0 0 8px; padding: 0 14px; border-radius: 8px; background: var(--signal); color: #1E2638; font-weight: 700; font-size: 15px; text-decoration: none; border: 2px solid #1E2638; box-shadow: 0 3px 0 #1E2638; }
 #toast { position: fixed; left: 50%; bottom: 140px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 40; max-width: min(92vw, 520px); background: var(--ink); color: var(--paper); padding: 12px 16px; border-radius: 10px; font-size: 16px; text-align: center; transition: .25s; }
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
-#overlay { position: fixed; inset: 0; z-index: 30; display: none; place-items: center; padding: 16px; background: var(--paper); }
+#overlay { position: fixed; inset: 0; z-index: 30; display: none; justify-items: center; padding: 16px; background: var(--paper); overflow-y: auto; overscroll-behavior: contain; }   /* たまごが いくつも かえると 画面より 長くなる→スクロールで ボタンまで 行ける */
 #overlay.show { display: grid; }
-#overlay .sheet { width: min(100%, 520px); text-align: center; display: grid; gap: 12px; }
+#overlay .sheet { width: min(100%, 520px); margin: auto 0; text-align: center; display: grid; gap: 12px; }
 #overlay h2 { font-size: 30px; }
 #overlay p { margin: 0; font-size: 18px; }
 #fx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }
@@ -964,6 +967,10 @@ details.more summary { font-family: var(--round); font-weight: 900; font-size: 1
 
 /* 今日の記録を X にポスト（大人の 入り口） */
 .btn-share { width: 100%; }
+.feel { margin: 14px 0 0; text-align: center; }
+.feel-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 6px; }
+.feel-btns .btn-sub { width: auto; min-height: 0; padding: 7px 12px; font-size: 14px; border-width: 1.5px; box-shadow: none; }
+.feel-done { margin: 14px 0 0; text-align: center; color: var(--ink-2); font-size: 15px; }
 .memcard .btn-share { margin-top: 12px; font-size: 16px; }
 
 </style>
@@ -2042,6 +2049,10 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       '', ENTRY.tags || '#勉強垢'].filter((x, i) => x || i === 4).join('\n');
   }
   const shareURL = () => new URL(ENTRY.id + '/', location.href.split(/[?#]/)[0].replace(/[^/]*$/, '')).href;
+  // 1タップの感想（大人の入り口だけ。仕組みの良し悪しを 測る。押したら お礼だけ 出す）
+  const FEELS = [['ok', A`続けられそう`], ['long', A`ちょっと長い`], ['hard', A`やり方が分かりにくい`]];
+  const feelBox = s => !(ADULT && ENTRY) ? '' : s.feel ? A`<p class="feel-done">ありがとうございます。直すときの参考にします。</p>`
+    : `<section class="feel"><p class="label">${A`どうでしたか？（1つ押すだけ）`}</p><div class="feel-btns">${FEELS.map(([v, l]) => btn('feel', A`${l}`, 'btn-sub', `data-v="${v}"`)).join('')}</div></section>`;
   const shareBtn = () => ADULT && ENTRY ? btn('share', A`今日の記録をXにポスト`, 'btn-sub btn-share') : '';
   // 試験日の 入力（使い方・設定の 画面。入り口ごとに settings.exam に 保存）
   const examSection = () => ADULT ? A`<section class="examset"><h3>試験日（任意）</h3>
@@ -2614,6 +2625,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       rowPos: 0, act, tableSig: tableSig(c, mode, act), rows: [], peeks: [], curPeeks: [], phase: 'run', lastTap: 0, pausedMs: 0 };
     const hp = zakoHp(c, mode, act); R.zk = { hp, max: hp, n: 0 };
     gs('run', DS.id);
+    if (mode === 'hide') gs('hide', DS.id);   // 隠すに 進んだ人（仕組みを 測る）
     const round = S.sessions.filter(s => s.day === today()).length + 1;   // 今日 何ラウンドめ
     const k0 = rowInfo(c, act[0]).codes.find(k => mark(c, k) !== 'known') || ALL[0], p0 = PAIR[k0];
     const how = `<section class="cdhow"><p class="cdh">${T('<b>2回</b> つづけて 言う', A`<b>2回</b>続けて言う`)}</p>
@@ -2862,6 +2874,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
         ${btn('home', 'ホームへ', (canQuiz() && !ENTRY) || bossOpen() || roundOK ? 'btn-sub' : 'btn-main')}
         ${shareBtn()}
       </div>
+      ${feelBox(s)}
       ${zres}
       ${s.bonus && !ENTRY ? `<p class="tbonus">⏱ ${s.min}分 さい後まで！ ボーナス ザコ <b>+${s.bonus}</b>ひき</p>` : ''}
       ${s.autoAdd && s.autoAdd.length ? `<p class="autow">${T(`出てこなかった <b>${s.autoAdd.length}こ</b> は、次から ★（4回 言う）に したよ。<br><small>のぞかずに 言えたら ★は きえるよ</small>`, A`出てこなかった<b>${s.autoAdd.length}個</b>は、次から★（4回言う）にしました。<br><small>答えを見ずに言えたら★は外れます</small>`)}</p>` : ''}
@@ -3826,6 +3839,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       go('check', { draft: d, remark: true });
     },
     saveReward: () => { S.settings.reward = document.getElementById('reward').value.trim(); save(); toast('保存しました'); },
+    feel: d => { const s = ui.result && ui.result.s; if (!s || s.feel || !ENTRY) return; s.feel = d.v; save(); gs('feel', d.v); rerenderKeepScroll(); },
     share: () => { if (!ENTRY) return; gs('share', ENTRY.id); window.open('https://x.com/intent/post?text=' + encodeURIComponent(shareText()) + '&url=' + encodeURIComponent(shareURL()), '_blank', 'noopener'); },
     examClear: () => { if (ENTRY && S.settings.exam) { delete S.settings.exam[ENTRY.id]; save(); } rerenderKeepScroll(); },
     rdays: d => { S.settings.rewardDays = +d.v; save(); rerenderKeepScroll(); },
