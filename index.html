@@ -1555,6 +1555,15 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   const brand = () => ENTRY ? ENTRY.name : 'ぐるぐる音読';
   // アクセス数（game-stats。配信版だけに t.js が入る。どの ドリルに 人が 来たかを 見る。D-118）
   const gs = (e, v) => { try { window.gstat && window.gstat(e, v); } catch (x) { } };
+  // 練習の記録を 佐々木さんの PC で 見る（D-124）。?send=合言葉 で 一度 開いた 端末だけ、練習が 終わるたびに 日・表・時間・行数だけを game-stats に 送る。?send=0 で やめる。名前・答えは 送らない
+  const GK_URL = 'https://game-stats.ktk-y-sasaki.workers.dev/gk';
+  const gkKey = () => { try { return localStorage.getItem('gk_send') || ''; } catch (x) { return ''; } };
+  const gkRec = s => {
+    const c = cycleById(s.cycleId), d = c && DATASETS[c.datasetId], ms = (s.rows || []).map(r => r.ms).filter(x => x > 0);
+    return { id: s.id, day: s.day, t: Date.parse(s.startedAt) || 0, ds: c ? c.datasetId : '', dn: d ? d.title : '', mode: s.mode, off: !!s.official, part: !!s.partial, min: Math.round(s.min || 0), ms: Math.round(s.durationMs || 0),
+      rows: ms.length, avg: ms.length ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : 0, best: ms.length ? Math.min(...ms) : 0 };
+  };
+  const gkSend = list => { const k = gkKey(); if (!k || !list.length) return; try { fetch(GK_URL, { method: 'POST', headers: { 'content-type': 'application/json', 'x-gs-key': k }, body: JSON.stringify({ list: list.map(gkRec) }), keepalive: true }).catch(() => { }); } catch (x) { } };
   const visibleDs = () => ENTRY ? ENTRY.ds.filter(id => DATASETS[id]) : DS_ORDER.filter(id => !ENTRY_ONLY.has(id) && DATASETS[id].pairs.some(shown));
   function useDs(id) {
     const vis = visibleDs();
@@ -2792,6 +2801,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const t0 = c.kind === 'main' ? titleFor(c) : null, ti0 = t0 ? TITLES.indexOf(t0.t) : -1;
     S.sessions.push(s);
     S.inProgress = null;
+    gkSend([s]);
     if (s.mode === 'hide') S.settings.seenPeekHint = true;
     if (s.mode === 'hide' && c.kind === 'main' && !partial) autoWeak(c, s);
     let cleared = false, rewardNow = false;
@@ -3923,6 +3933,9 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   }
 
   const params = new URLSearchParams(location.search);
+  if (params.has('send')) {   // ?send=合言葉：この 端末を 記録の 送り先に する（いまある 記録も まとめて 送る）。?send=0 で やめる
+    try { const v = params.get('send'); if (!v || v === '0') localStorage.removeItem('gk_send'); else { localStorage.setItem('gk_send', v); gkSend(S.sessions.slice(-500)); toast('記録を PC に 送ります'); } history.replaceState(null, '', location.pathname); } catch (x) { }
+  }
   if (params.has('iken')) { S.settings.iken = params.get('iken') !== '0'; save(); }
   if (params.has('kuku')) setEntry(params.get('kuku') !== '0' ? 'kuku' : '');   // ?kuku（?kuku=1）で ぐるぐる九九、?kuku=0 で もどす（D-116）
   if (params.has('d')) { const d = params.get('d'); if (d === '0' || d === '') setEntry(''); else if (entryOK(d)) setEntry(d); }   // ?d=<id> で 入り口、?d=0 で 本体（D-119）
