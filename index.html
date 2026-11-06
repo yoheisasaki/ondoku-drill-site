@@ -541,6 +541,13 @@ body.print-preview .page { width: 210mm; height: 297mm; padding: 8mm; box-sizing
 .qcard .mapwrap.small { max-width: 260px; margin: 8px auto 0; }
 .qcard .mapwrap.small .jmap { max-height: 28dvh; }
 @media (max-width: 420px) { .qch { font-size: 17px; min-height: 64px; } }
+/* マスター テスト：押しまちがい 対策（D-124）。1列で 大きく・間を あける。押すと えらぶだけ → けってい */
+.mquiz .qchoices { grid-template-columns: 1fr; gap: 14px; }
+.mquiz .qch { min-height: 76px; font-size: 22px; }
+.qch.sel { background: color-mix(in srgb, var(--signal) 45%, var(--sheet)); border-width: 4px; box-shadow: 0 4px 0 var(--ink), 0 0 0 4px color-mix(in srgb, var(--signal) 60%, transparent); }
+.qch.sel::before { content: "▶ "; }
+.mok { width: 100%; min-height: 72px; font-size: 22px; }
+.mok:disabled { opacity: .5; }
 .mapbtn { margin-top: 10px; width: 100%; }
 .quizend .big { margin: 4px 0; }
 
@@ -1783,23 +1790,24 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     try {
       const t = AC.currentTime + when, o = AC.createOscillator(), g = AC.createGain();
       o.type = type; o.frequency.value = freq;
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.015);
       g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
       o.connect(g).connect(AC.destination); o.start(t); o.stop(t + dur + 0.02);
     } catch (e) { }
   }
   const SND = {
-    tap: () => { tone(520, 0.06, 0, 'square', 0.07); tone(780, 0.08, 0.05, 'square', 0.05); },
-    faster: () => { tone(988, 0.08); tone(1319, 0.14, 0.07); },
-    nope: () => tone(220, 0.15, 0, 'sawtooth', 0.06),
-    lap: () => { [659, 784, 988].forEach((f, i) => tone(f, 0.12, i * 0.07)); },
-    count: () => tone(660, 0.12, 0, 'sine', 0.2),
-    go: () => tone(990, 0.25, 0, 'sine', 0.22),
-    end: () => { [880, 0, 880, 0, 880].forEach((f, i) => f && tone(f, 0.18, i * 0.2, 'sine', 0.22)); },
-    fanfare: () => { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, i === 5 ? 0.5 : 0.16, i * 0.13, 'square', 0.1)); },
-    stamp: () => { tone(180, 0.12, 0, 'sine', 0.3); tone(120, 0.15, 0.03, 'sine', 0.2); },
-    kill: () => { tone(330, 0.08, 0, 'square', 0.09); tone(165, 0.18, 0.05, 'sawtooth', 0.07); [784, 988, 1319].forEach((f, i) => tone(f, 0.1, 0.18 + i * 0.06)); },
-    egg: () => { [0, 0.25, 0.5].forEach(t => tone(300, 0.06, t, 'square', 0.06)); [523, 784, 1047, 1568].forEach((f, i) => tone(f, i === 3 ? 0.4 : 0.12, 1.3 + i * 0.1, 'triangle', 0.14)); }
+    // 音は やわらかく（D-124 佐々木さん「全体的に 音が 不快」）：ブザーの 音色（square・sawtooth）を やめ、まるい 音（sine・triangle）に。高い 音を 下げ、音量も 下げる
+    tap: () => tone(660, 0.05, 0, 'sine', 0.05),
+    faster: () => { tone(784, 0.09, 0, 'sine', 0.09); tone(988, 0.14, 0.07, 'sine', 0.09); },
+    nope: () => { tone(330, 0.12, 0, 'sine', 0.08); tone(262, 0.2, 0.1, 'sine', 0.07); },
+    lap: () => { [523, 659, 784].forEach((f, i) => tone(f, 0.12, i * 0.07, 'sine', 0.09)); },
+    count: () => tone(587, 0.12, 0, 'sine', 0.12),
+    go: () => tone(784, 0.25, 0, 'sine', 0.13),
+    end: () => { [784, 0, 784, 0, 784].forEach((f, i) => f && tone(f, 0.18, i * 0.2, 'sine', 0.13)); },
+    fanfare: () => { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, i === 5 ? 0.5 : 0.16, i * 0.13, 'triangle', 0.09)); },
+    stamp: () => { tone(180, 0.12, 0, 'sine', 0.18); tone(120, 0.15, 0.03, 'sine', 0.12); },
+    kill: () => { tone(294, 0.08, 0, 'triangle', 0.07); tone(196, 0.15, 0.05, 'sine', 0.07); [659, 784, 988].forEach((f, i) => tone(f, 0.1, 0.18 + i * 0.06, 'sine', 0.08)); },
+    egg: () => { [0, 0.25, 0.5].forEach(t => tone(294, 0.06, t, 'triangle', 0.06)); [523, 659, 784, 1047].forEach((f, i) => tone(f, i === 3 ? 0.4 : 0.12, 1.3 + i * 0.1, 'triangle', 0.1)); }
   };
 
   /* ---------- 読み上げ（読み方の確認だけ） ---------- */
@@ -3339,10 +3347,12 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const z = ui.mt, q = z.qs[z.i];
     if (!q) return SCREENS.masterEnd();
     const p = PAIR[q.code], fb = z.fb;
+    // 押しまちがい 対策（D-124）：押すと えらぶだけ（ほかを 押せば えらび直せる）。「これで けってい」で 答える
     const choices = q.ch.map((c, i) => {
-      const cls = fb ? (ansText(PAIR[c]) === ansText(p) ? 'right' : fb.pick === i ? 'wrong' : 'dim') : '';
-      return `<button type="button" class="qch ${cls}" data-act="masterPick" data-v="${i}" ${fb ? 'disabled' : ''}>${rb(ans(PAIR[c]))}</button>`;
+      const cls = fb ? (ansText(PAIR[c]) === ansText(p) ? 'right' : fb.pick === i ? 'wrong' : 'dim') : z.sel === i ? 'sel' : '';
+      return `<button type="button" class="qch ${cls}" data-act="masterPick" data-v="${i}" ${fb ? 'disabled' : ''} aria-pressed="${!fb && z.sel === i}">${rb(ans(PAIR[c]))}</button>`;
     }).join('');
+    const okBtn = fb ? '' : `<button type="button" class="btn btn-main mok" data-act="masterOk" ${z.sel == null ? 'disabled' : ''}>${z.sel == null ? T('こたえを えらんでね', A`答えを選んでください`) : T('✔ これで けってい！', A`✔ これで決定`)}</button>`;
     const to = DS.subject === 'sansu' ? '＝' : ' → ';
     const card = fb && !fb.ok ? `<div class="qcard ng" role="dialog"><div class="qtx"><p class="qres">${T('✕ おしい！', A`✕ 不正解`)}</p><p class="qa">${rb(p.q)}${to}<b>${rb(ans(p))}</b></p></div>
       ${btn('masterNext', z.i + 1 >= z.qs.length ? T('けっかを 見る', A`結果を見る`) : T('次の 問題 ▶', A`次の問題 ▶`), 'btn-main')}</div>`
@@ -3350,13 +3360,18 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const pct = Math.round(z.i / z.qs.length * 100);
     return `<header class="qhead"><p class="qno">${z.dan ? (z.danLabel || `${z.dan}の だん`) : T('🏆 マスター テスト', A`🏆 マスターテスト`)} <b>${z.i + 1}</b> / ${z.qs.length}${z.miss.length ? `　<span class="mmiss">${T('まちがい', A`間違い`)} ${z.miss.length}</span>` : ''}</p>
         <div class="mbar"><i style="width:${pct}%"></i></div><p class="qq">${quizQuestion(p)}</p></header>
-      <main class="quiz ${fb ? 'answered' : ''}"><div class="qchoices">${choices}</div>${card}</main>`;
+      <main class="quiz mquiz ${fb ? 'answered' : ''}"><div class="qchoices">${choices}</div>${okBtn}${card}</main>`;
   };
-  function masterPick(i) {
+  function masterSel(i) {   // えらぶだけ（まだ 答えない）
     const z = ui.mt;
     if (!z || z.fb) return;
+    z.sel = i; SND.tap(); render();
+  }
+  function masterPick(i) {
+    const z = ui.mt;
+    if (!z || z.fb || i == null) return;
     const q = z.qs[z.i], p = PAIR[q.code], ok = ansText(PAIR[q.ch[i]]) === ansText(p);
-    z.fb = { ok, pick: i };
+    z.fb = { ok, pick: i }; z.sel = null;
     if (ok) { z.ok++; SND.lap(); render(); setTimeout(() => { if (ui.mt === z && z.fb) { z.fb = null; z.i++; render(); } }, 900); }   // せいかいは テンポよく 次へ（見える 長さに。D-115）
     else { z.miss.push(q.code); SND.nope(); render(); }
   }
@@ -3800,7 +3815,8 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     quiz: () => ENTRY ? go('home') : startQuiz(),
     master: () => startMaster(),
     masterGo: () => { ui.mt.startedAt = Date.now(); go('master'); },
-    masterPick: d => masterPick(+d.v),
+    masterPick: d => masterSel(+d.v),
+    masterOk: () => masterPick(ui.mt && ui.mt.sel),
     masterNext: () => { const z = ui.mt; z.fb = null; z.i++; render(); window.scrollTo(0, 0); },
     badges: () => go('badges'),
     certView: d => showOverlay(`${certHTML(d.id)}<div class="actions">${btn('certPrint', T('🖨 いんさつ', A`🖨 印刷`), 'btn-sub', `data-id="${d.id}"`)}${btn('ovClose', T('とじる', A`閉じる`), 'btn-main')}</div>`),
