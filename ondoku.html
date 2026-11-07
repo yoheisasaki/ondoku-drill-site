@@ -338,7 +338,7 @@ button.a.cover.peek { outline: 2px solid var(--answer); }
 .tlist li { border-top: 1px dashed var(--line); }
 .tlist li:first-child { border-top: 0; }
 /* 百式の 紙のように 1行1語：番号・問い・答え・印（D-121）。行に 触れると 読み上げ */
-.trow { display: grid; grid-template-columns: 1.7em var(--qcol, minmax(0, max-content)) minmax(0, 1fr) auto; align-items: center; column-gap: .55em;
+.trow { display: grid; grid-template-columns: 1.7em var(--qcol, fit-content(60%)) minmax(0, 1fr) auto; align-items: center; column-gap: .55em;
   width: 100%; margin: 0; padding: .3em .6em; border: 0; border-radius: 0; background: none; box-shadow: none; color: inherit; text-align: left;
   font-size: 20px; line-height: 1.3; }
 button.trow:active { background: var(--paper-2); }
@@ -541,12 +541,27 @@ body.print-preview .page { width: 210mm; height: 297mm; padding: 8mm; box-sizing
 .qcard .mapwrap.small .jmap { max-height: 28dvh; }
 @media (max-width: 420px) { .qch { font-size: 17px; min-height: 64px; } }
 /* マスター テスト：押しまちがい 対策（D-124）。1列で 大きく・間を あける。押すと えらぶだけ → けってい */
-.mquiz .qchoices { grid-template-columns: 1fr; gap: 14px; }
-.mquiz .qch { min-height: 76px; font-size: 22px; }
+.mquiz { flex: 1; display: flex; flex-direction: column; }
+.mquiz .qchoices { grid-template-columns: 1fr; gap: 14px; margin-bottom: 0; }
+.mquiz .qch { min-height: 76px; font-size: 22px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.mquiz .qch:active:not(:disabled) { background: color-mix(in srgb, var(--signal) 70%, var(--sheet)); }
 .qch.sel { background: color-mix(in srgb, var(--signal) 45%, var(--sheet)); border-width: 4px; box-shadow: 0 4px 0 var(--ink), 0 0 0 4px color-mix(in srgb, var(--signal) 60%, transparent); }
-.qch.sel::before { content: "▶ "; }
-.mok { width: 100%; min-height: 72px; font-size: 22px; }
+.qch.sel::before { content: "✔ "; color: var(--rail-d); }   /* 色だけに たよらず ✔ で 分かる（D-135） */
+.mok { width: 100%; min-height: 72px; font-size: 22px; touch-action: manipulation; }
 .mok:disabled { opacity: .5; }
+.mnext:disabled { opacity: .5; }
+/* けってい／次へ は 答えから 離して 画面の 下に（D-135：答えの すぐ下に あると、4つめを 押そうと して 確定していた。実測 12px→28px以上） */
+.mdock { margin-top: auto; padding-top: 28px; min-height: 100px; }
+.mdock .btn-main { min-height: 72px; }
+.mres { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px; margin: 14px 0 0; padding: 8px 12px; border: 3px solid; border-radius: 12px; background: var(--sheet); font-family: var(--round); font-weight: 900; font-size: 20px; text-align: center; }
+.mres span { font-size: 17px; font-weight: 700; color: var(--ink); }
+.mres.ok { border-color: var(--rail); color: var(--rail); } .mres.ng { border-color: var(--answer); color: var(--answer); }
+@media (max-height: 620px) {   /* iPhone SE（第1世代）320x568：1画面に 入れる。それでも 60px・間10px */
+  .mquiz .qchoices { gap: 10px; } .mquiz .qch { min-height: 60px; font-size: 20px; padding: 4px 10px; }
+  .mdock { min-height: 80px; padding-top: 24px; } .mdock .btn-main, .mok { min-height: 60px; font-size: 20px; }
+  .mres { margin-top: 8px; padding: 4px 10px; font-size: 18px; }
+  .qhead { padding-top: 2px; } .qq { font-size: 21px; }
+}
 .mapbtn { margin-top: 10px; width: 100%; }
 .quizend .big { margin: 4px 0; }
 
@@ -849,14 +864,49 @@ details.more summary { font-family: var(--round); font-weight: 900; font-size: 1
 .mbar { height: 8px; border-radius: 4px; background: var(--paper-2); overflow: hidden; margin: 4px 0 6px; }
 .mbar i { display: block; height: 100%; background: var(--gold); transition: width .3s; }
 .mmiss { color: var(--answer); font-weight: 700; }
-.cert { position: relative; margin: 12px auto; max-width: 360px; padding: 22px 18px 18px; background: var(--sheet); border: 6px double var(--gold); border-radius: 10px; text-align: center; animation: certIn .6s cubic-bezier(.2, 1.4, .4, 1); }
+.cert { position: relative; margin: 12px auto; max-width: 360px; padding: 14px 18px 18px; background: var(--sheet); border: 6px double var(--gold); border-radius: 10px; text-align: center; animation: certIn .6s cubic-bezier(.2, 1.4, .4, 1); }
 .cert p { margin: 0; }
 .cert-t { font-family: var(--round); font-weight: 900; font-size: 26px; letter-spacing: .2em; }
 .cert-ds { margin-top: 10px !important; font-size: 18px; font-weight: 700; }
 .cert-m { font-family: var(--round); font-weight: 900; font-size: 44px; color: var(--answer); line-height: 1.2; }
 .cert-b { margin-top: 6px !important; font-size: 15px; }
-.cert-d { margin-top: 12px !important; font-size: 13px; color: var(--ink-2); }
-.cert-seal { position: absolute; right: 10px; bottom: 6px; font-size: 40px; transform: rotate(-12deg); }
+.cert-g { margin-top: 2px !important; font-size: 14px; color: var(--ink-2); }
+.cert-tg { margin-top: 2px !important; font-size: 12px; color: var(--ink-2); }
+.cert-n { font-family: var(--round); font-size: 1.2em; }
+.cert-d { margin-top: 12px !important; font-size: 15px; color: var(--ink); }
+.cert-by { margin-top: 2px !important; font-size: 13px; color: var(--ink-2); }
+.cert-seal { display: block; font-size: 44px; line-height: 1.1; }
+/* 認定画面（D-135）：大きな 見出し・認定証の プレビュー・「見せる」 */
+.mhead { font-family: var(--round); font-weight: 900; font-size: 40px !important; line-height: 1.25; color: var(--answer); animation: certIn .6s cubic-bezier(.2, 1.4, .4, 1); }
+.msub { font-family: var(--round); font-weight: 900; font-size: 19px !important; color: var(--rail); }
+.certprev { cursor: pointer; }
+.certprev .cert { margin: 4px auto; }
+.btn-show { font-size: 22px; padding: 12px 8px; text-wrap: balance; word-break: keep-all; background: var(--gold); color: var(--ink); border-color: var(--ink); box-shadow: 0 5px 0 var(--ink); min-height: 76px; }
+.btn-show:active { box-shadow: 0 2px 0 var(--ink); }
+.mbar.big { height: 14px; border-radius: 7px; max-width: 360px; width: 100%; margin: 2px auto; }
+.mlisth { font-family: var(--round); font-weight: 900; font-size: 16px !important; color: var(--ink-2); margin-top: 6px !important; }
+.mmissed .wweak { margin: 0 auto; }
+.mdock2 { position: sticky; bottom: 0; padding: 14px 0 max(4px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--paper) 22%); }
+.mdock2 .btn-main { min-height: 84px; }
+.badges .mshow { display: block; margin-top: 4px; font-family: var(--round); font-weight: 900; font-size: 14px; color: var(--ink); background: var(--gold); border-radius: 999px; padding: 2px 8px; }
+/* 認定証を 画面いっぱいに（全画面。余計な ボタンは なし：とじる と 印刷だけ） */
+#overlay.certfull { padding: 0; background: color-mix(in srgb, var(--gold) 22%, var(--paper)); overflow: hidden; }
+#overlay.certfull.show { display: block; }
+#overlay.certfull .sheet { width: 100%; max-width: none; height: 100dvh; margin: 0; padding: max(10px, env(safe-area-inset-top)) 14px max(10px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; }
+#overlay.certfull .cert { flex: 1; min-height: 0; max-width: none; width: 100%; margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: min(1.5vh, 14px); border-width: 8px; padding: 10px 12px; }
+#overlay.certfull .cert-seal { font-size: clamp(36px, min(16vw, 8vh), 110px); }
+#overlay.certfull .cert-t { font-size: clamp(24px, min(8vw, 5vh), 50px); }
+#overlay.certfull .cert-ds { font-size: clamp(22px, min(7vw, 5vh), 46px); margin-top: 0 !important; }
+#overlay.certfull .cert-g { font-size: clamp(15px, min(4.5vw, 3vh), 26px); margin-top: 0 !important; }
+#overlay.certfull .cert-tg { font-size: clamp(12px, min(3.4vw, 2.4vh), 20px); margin-top: 0 !important; }
+#overlay.certfull .cert-m { font-size: clamp(40px, min(17vw, 10vh), 120px); }
+#overlay.certfull .cert-b { font-size: clamp(18px, min(5.6vw, 4vh), 34px); margin-top: 0 !important; }
+#overlay.certfull .cert-d { font-size: clamp(16px, min(5vw, 3.4vh), 30px); margin-top: 0 !important; }
+#overlay.certfull .cert-by { font-size: clamp(13px, min(3.6vw, 2.6vh), 22px); margin-top: 0 !important; }
+.cfclose { align-self: flex-end; min-height: 52px; min-width: 120px; padding: 0 18px; border-radius: 26px; border: 3px solid var(--ink); background: var(--sheet); color: var(--ink); font-family: var(--round); font-weight: 900; font-size: 20px; box-shadow: 0 3px 0 var(--ink); }
+.cfclose:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.cfprint { min-height: 52px !important; width: auto !important; align-self: center; padding: 0 24px !important; font-size: 17px !important; opacity: .85; }
+@media (orientation: landscape) and (max-height: 520px) { #overlay.certfull .cert-seal { display: none; } }
 @keyframes certIn { from { transform: scale(.4) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
 .badges .mb { padding: 10px 6px; }
 .mbi { display: block; font-size: 40px; line-height: 1.2; }
@@ -881,7 +931,8 @@ details.more summary { font-family: var(--round); font-weight: 900; font-size: 1
 .mprize { margin: 8px auto; max-width: 360px; padding: 8px 12px; border: 2px dashed var(--gold); border-radius: 10px; font-size: 16px; }
 .praise { font-family: var(--round); font-weight: 900; font-size: 20px; color: var(--rail); }
 .certpage { justify-content: center; align-items: center; }
-.certpage .cert { max-width: 180mm; width: 180mm; padding: 16mm; border-width: 4mm; animation: none; }
+.certpage .cert { max-width: 180mm; width: 180mm; padding: 14mm 16mm; border-width: 4mm; animation: none; }
+.certpage .cert-g { font-size: 14pt; } .certpage .cert-tg { font-size: 11pt; } .certpage .cert-by { font-size: 12pt; } .certpage .cert-n { font-size: 1.1em; }
 .certpage .cert-t { font-size: 36pt; } .certpage .cert-ds { font-size: 22pt; } .certpage .cert-m { font-size: 64pt; }
 .certpage .cert-b { font-size: 18pt; } .certpage .cert-d { font-size: 14pt; } .certpage .cert-seal { font-size: 60pt; }
 
@@ -978,6 +1029,155 @@ details.more summary { font-family: var(--round); font-weight: 900; font-size: 1
 .feel-btns .btn-sub { width: auto; min-height: 0; padding: 7px 12px; font-size: 14px; border-width: 1.5px; box-shadow: none; }
 .feel-done { margin: 14px 0 0; text-align: center; color: var(--ink-2); font-size: 15px; }
 .memcard .btn-share { margin-top: 12px; font-size: 16px; }
+
+/* =====================================================================
+   UI/UX v1（2026-11-06）：各画面の主役を1つに。ホームは「始める」、音読は文字、けっかは「おわり！」
+   既存のクラス名・data-act は そのまま。見た目と並びだけ。
+   ===================================================================== */
+.btn-sub, .navbtn, .pickitem { word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; }
+.home { gap: 12px; padding-top: 12px; }
+.home > * { margin-top: 0 !important; }
+.home .actions.first { padding: 0; gap: 10px; }
+.home .actions.first .btn-main { min-height: 96px; font-size: 28px; }
+.home .actions.first .btn-quiz { min-height: 60px; font-size: 19px; box-shadow: 0 3px 0 var(--ink); }
+.home .actions.first .btn-sub { min-height: 64px; }
+/* 今日の ドリル（カード）：名前・7日・前の記録 を ひとまとめに */
+.weekcard { padding: 10px 14px 4px; }
+.weekcard .wk-name { font-size: 21px; }
+.weekcard .wk-d { margin: 0; }
+.weekcard .wk-d b { font-size: 28px; }
+.weekcard .rail { margin-top: 6px; }
+.weekcard .st .dot { width: 40px; height: 40px; }
+.weekcard .hanamaru { width: 32px; height: 32px; }
+.weekcard .daynote { font-size: 15px; margin: 6px 0 4px; }
+.wk-last { margin: 0 0 2px; padding-top: 6px; border-top: 1px dashed var(--line); font-size: 14px; color: var(--ink-2); text-align: center; }
+.wk-last b { font-family: var(--round); font-size: 17px; color: var(--ink); }
+.wk-last small { font-size: 13px; }
+.todaycard { text-align: center; }
+.todaycard .wk-d { font-size: 15px; }
+/* ドリル・きろく・なかま */
+.homenav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.homenav.two { grid-template-columns: repeat(2, 1fr); }
+.navbtn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; min-height: 68px; padding: 6px 4px; font-family: var(--round); font-weight: 700; font-size: 16px; line-height: 1.25;
+  border-radius: 12px; border: 2px solid var(--ink); background: var(--sheet); color: var(--ink); box-shadow: 0 3px 0 var(--ink); }
+.navbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.navbtn .ni { font-size: 22px; line-height: 1.2; }
+.navbtn small { font-family: var(--ud); font-weight: 400; font-size: 12px; color: var(--ink-2); }
+/* 小さな ごほうび情報は 下に、小さく */
+.mini div { padding: 7px 12px; }
+.mini dd { font-size: 17px; }
+.mrow { gap: 10px; }
+.mrow .btn-sub { min-height: 56px; font-size: 16px; padding: 6px 6px; box-shadow: 0 3px 0 var(--ink); }
+.mrow .btn-master { box-shadow: 0 3px 0 var(--gold); }
+.mrow .btn-ask { box-shadow: 0 3px 0 var(--rail); }
+.home .mapbtn { min-height: 52px; font-size: 16px; margin-top: 0; }
+.home .petcard { padding: 8px 12px; gap: 10px; border-width: 1.5px; border-radius: 10px; }
+.home .petcard .petpic { width: 60px; height: 60px; }
+.home .petcard .petname { font-size: 17px; }
+.home .petcard .petname span { font-size: 13px; }
+.home .petcard .petbar { height: 8px; margin: 4px 0 2px; border-width: 1px; }
+.home .petcard .petnext { font-size: 13px; }
+.home .petcard .btn-main { min-height: 52px; font-size: 18px; box-shadow: 0 3px 0 var(--rail-d); }
+.home .petcard.empty { flex-direction: row; text-align: left; flex-wrap: wrap; }
+.home .petcard.empty .pets3 .critter { width: 40px; height: 40px; }
+.home .petcard.empty p { flex: 1; font-size: 14px; min-width: 9em; }
+.home .petcard.empty .btn-sub { min-height: 48px; font-size: 16px; width: 100%; box-shadow: 0 3px 0 var(--ink); }
+.home .bosscard { padding: 6px 12px; gap: 10px; border-width: 1.5px; box-shadow: none; }
+.home .bosscard.open { border-width: 2px; box-shadow: 0 3px 0 var(--answer); }
+.home .bosscard .bosspic { width: 52px; height: 52px; }
+.home .bossinfo .bn { font-size: 16px; }
+.home .bossinfo .bhp, .home .bossinfo .bteam, .home .bossinfo .bnote { font-size: 12px; margin: 0; }
+.home .bossinfo .btn-main { min-height: 48px; font-size: 17px; }
+.home .stats { gap: 6px; margin: 0; }
+.home .stats div { padding: 3px 2px; border-width: 1.5px; border-radius: 8px; }
+.home .stats span { font-size: 11px; }
+.home .stats b { font-size: 18px; }
+.home .stats small { font-size: 11px; }
+.hub { display: grid; gap: 12px; padding: 4px 0 12px; }
+.hubbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hubbtns .btn-sub { min-height: 60px; font-size: 16px; }
+.hub .petcard, .hub .bosscard { margin: 0; }
+/* ドリルえらび：いまの・つづき・おすすめ の目印と 7日の進み */
+.pickitem { position: relative; gap: 4px; padding-top: 14px; }
+.ptag { position: absolute; top: -11px; left: 12px; padding: 1px 10px; border-radius: 99px; background: var(--rail); color: #fff; font-size: 13px; font-weight: 700; }
+.pickitem.on .ptag { background: var(--rail); }
+.pdots { display: flex; gap: 5px; margin-top: 2px; }
+.pdots i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); background: var(--sheet); }
+.pdots i.on { background: var(--rail); border-color: var(--rail); }
+.pick { gap: 16px; }
+/* けっか：まず「おわり！」 */
+.res-hero { display: flex; align-items: center; gap: 14px; padding: 8px 4px 0; }
+.res-hero .stamp { flex: none; }
+.res-msg { font-size: 32px; line-height: 1.25; color: var(--answer); }
+.res-hero.prac .res-msg { color: var(--rail); }
+.res-sub { margin: 2px 0 0; font-size: 15px; color: var(--ink-2); }
+.res-top { display: block; text-align: center; padding: 10px 12px; }
+.res-top .big { font-size: 36px; }
+.res-gains { display: grid; gap: 10px; }
+.res-gains > * { margin: 0 !important; }
+.result .resnext { margin-top: 0; padding: 0; gap: 10px; }
+.result .resnext .btn-main { min-height: 80px; font-size: 24px; }
+.result .resnext .btn-quiz { min-height: 60px; font-size: 18px; box-shadow: 0 3px 0 var(--ink); }
+.result .resgraph .btn-sub { min-height: 56px; font-size: 18px; }
+.homedock { padding-top: 10px; }
+.homedock .btn-main { min-height: 72px; font-size: 24px; }
+.result { padding-bottom: 8px; }
+/* 音読中：背の高い画面では 残り時間を大きく、ザコ（飾り）は 小さく。文字の場所を ふやす */
+@media (min-height: 761px) and (orientation: portrait) {
+  .clock span { font-size: 28px; }
+  .runhead.nozako .clock span { font-size: 40px; }
+  .zako { grid-template-columns: 36px 1fr auto; gap: 6px; }
+  .zako .zpic .critter { width: 36px; height: 36px; }
+  .zname { display: none; }
+  .zn b { font-size: 18px; }
+  .lapno { font-size: 17px; }
+  .lapno b { font-size: 26px; }
+}
+.pairs .times { font-size: 13px; border-color: transparent; background: var(--paper-2); padding: 0 6px; }
+.pairs li.weak .times { border-color: var(--weak); background: transparent; font-size: 15px; }
+.res-msg { font-size: 28px; word-break: keep-all; text-wrap: balance; }
+.res-hero .stamp.prac b { width: 56px; height: 56px; font-size: 28px; }
+.res-hero .hanamaru.big { width: 64px; height: 64px; }
+.weekcard .st .dot { width: 36px; height: 36px; font-size: 15px; }
+.weekcard .hanamaru { width: 28px; height: 28px; }
+.weekcard .wk-name { font-size: 19px; }
+.weekcard .wk-d b { font-size: 24px; }
+.weekcard .daynote { font-size: 14px; margin: 4px 0 2px; font-weight: 500; }
+.weekcard .wk-t { font-size: 13px; }
+
+/* =====================================================================
+   UI/UX v1.1（2026-11-07）：375×667 の音読を読みやすく／けっかの強弱／継続ホームは進みと前回を上に
+   ===================================================================== */
+/* 継続ホーム：説明文は 小さく うすく（進み・前回の記録の下） */
+.weekcard .wk-last { border-top: 0; padding-top: 4px; margin-top: 2px; font-size: 15px; }
+.weekcard .wk-last b { font-size: 19px; }
+.weekcard .daynote { font-size: 13px; font-weight: 400; color: var(--ink-2); margin: 2px 0 2px; }
+/* 音読（低い画面）：はじめての 黄色い説明を 小さく 1行に、読み方の1行は 吹き出しが ある間は しまう。行と ふりがなに ゆとり */
+@media (max-height: 760px) and (orientation: portrait) {
+  .firstbub { margin: 2px 0 6px; padding: 3px 8px; font-size: 12.5px; line-height: 1.3; border-radius: 8px; opacity: .92; }
+  .firstbub::after { bottom: -6px; border-width: 6px; }
+  .runrow:has(.firstbub) .howread { display: none; }
+  .howread { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; margin: 2px 0; }
+  .pairs li { padding: 2px 0; column-gap: .3em; }
+  .pairs rt { line-height: 1.3; letter-spacing: .02em; }
+  .pairs .times { padding: 0 4px; font-size: 12px; }
+  .runrow { padding: 3px 8px 3px; }
+}
+/* けっか：変化（相棒・たまご）は 三番目なので 小さく しずかに */
+.res-gains .petup { padding: 4px 10px; margin: 0; }
+.res-gains .petup .critter { width: 48px; height: 48px; }
+.res-gains .petup b { font-size: 16px; }
+.res-gains .zres { padding: 6px 12px; }
+.res-gains .zrow .critter { width: 44px; height: 44px; }
+.res-gains .zrow p { font-size: 15px; }
+.res-gains .tbonus, .res-gains .autow { font-size: 14px; padding: 6px 10px; }
+.res-gains .banner { font-size: 17px; padding: 8px; }
+.result .resnext .near { padding: 4px 10px; }
+.result .resnext .near p { font-size: 15px; }
+ruby { ruby-align: center; }
+
+/* 最終調整：はじめての黄色い説明は どの画面でも 1行（文を 短く して 情報は そのまま） */
+.firstbub { white-space: nowrap; font-size: 13px; padding: 3px 8px; margin: 2px 0 6px; overflow: hidden; text-overflow: ellipsis; }
 
 </style>
 </head>
@@ -1587,15 +1787,17 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   function fresh() {
     return {
       version: 1,
-      settings: { level: 'kids', tokyo: 'tokyo', sound: true, reward: '', rewardDays: 5, seenIntro: false, seenRunHint: false, seenPeekHint: false, ds: '', iken: false, minutes: 5, grade: 6, kuku: false, seenKuku: false, mainDs: '', entry: '', seenEntry: {}, exam: {} },
+      settings: { level: 'kids', tokyo: 'tokyo', sound: true, reward: '', rewardDays: 5, seenIntro: false, seenRunHint: false, seenPeekHint: false, ds: '', iken: false, minutes: 5, grade: 6, gradeSet: false, kuku: false, seenKuku: false, mainDs: '', entry: '', seenEntry: {}, exam: {} },
       cycles: [], sessions: [], rewardShown: [], inProgress: null, map: {}, quizLog: [], pet: null, mons: [], bossWins: [], egg: 0, masters: {}, masterLog: [], askLog: []
     };
   }
   function normalize(s) {
     const f = fresh();
+    const noGS = !s.settings || typeof s.settings.gradeSet !== 'boolean';   // gradeSet が ない 古いデータ
     s.settings = Object.assign(f.settings, s.settings || {});
     if (!MINUTES.includes(s.settings.minutes)) s.settings.minutes = 5;
     if (![2, 3, 4, 5, 6].includes(s.settings.grade)) s.settings.grade = 6;   // 基準が決まるまでは絞らない（D-84）
+    if (noGS) s.settings.gradeSet = s.settings.grade !== 6;   // 古いデータ：小2〜5は 子が 選んだ ものと みなす。6は 既定と 区別できないので 未設定（D-143）
     if (s.settings.kuku && !s.settings.entry) s.settings.entry = 'kuku';   // D-119 より前の ぐるぐる九九
     s.settings.seenEntry = s.settings.seenEntry || {}; s.settings.exam = s.settings.exam || {};
     s.cycles = s.cycles || []; s.sessions = s.sessions || []; s.rewardShown = s.rewardShown || []; s.map = s.map || {}; s.quizLog = s.quizLog || []; s.mons = s.mons || []; s.bossWins = s.bossWins || []; s.egg = s.egg || 0; s.masters = s.masters || {}; s.masterLog = s.masterLog || []; s.askLog = s.askLog || []; if (s.pet && !['hinoko', 'shizuku', 'mebuki'].includes(s.pet.kind)) s.pet = null;
@@ -1643,7 +1845,16 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
 
   /* ---------- ペアの表示 ---------- */
   function ans(p) { return (DS.id === 'prefectures' && p.code === '13' && S.settings.tokyo === 'shinjuku' && p.a_alt) ? p.a_alt : p.a; }
-  function rb(parts) { return parts.map(([t, r]) => r ? `<ruby>${esc(t)}<rt>${esc(r).replace(/\*([^*]+)\*/g, '<b>$1</b>')}</rt></ruby>` : esc(t)).join(''); }   // 英語の読みは 強く読む所を *…* で太字に（ぐるぐる英単語）
+  // ふりがなつきが 隣り合う ところは ひとまとまりの ruby に する（漢字ごとの ruby だと、ふりがなが 親文字より 長いとき「札幌 市」のように 親文字の間が 開く。表示だけの ことで、データは そのまま）。英語の読み（*）は 分けたまま
+  function rubyGroups(parts) {
+    const out = [];
+    parts.forEach(([t, r]) => {
+      const last = out[out.length - 1];
+      if (r && !/\*/.test(r) && last && last[1] && !/\*/.test(last[1])) { last[0] += t; last[1] += r; } else out.push([t, r]);
+    });
+    return out;
+  }
+  function rb(parts) { return rubyGroups(parts).map(([t, r]) => r ? `<ruby>${esc(t)}<rt>${esc(r).replace(/\*([^*]+)\*/g, '<b>$1</b>')}</rt></ruby>` : esc(t)).join(''); }   // 英語の読みは 強く読む所を *…* で太字に（ぐるぐる英単語）
   function kana(parts) { return parts.map(([t, r]) => r ? r.replace(/\*/g, '') : t).join(''); }   // ふりがなが空なら表記（さいたま）
   function plain(parts) { return parts.map(([t]) => t).join(''); }
   function Q(p) { return p.qs || p.q; }   // 音読・一覧・印刷は 短い問い qs（音数をそろえる。あれば）。クイズ・まちがいの表示は 文の問い q のまま
@@ -1990,7 +2201,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   function petCard() {
     if (ENTRY) return '';   // ぐるぐる九九は ゲームなし（D-116）
     if (!S.pet) return `<section class="petcard empty"><div class="pets3">${Object.keys(PETS).map(k => critter(PETS[k])).join('')}</div>
-      <p>音読すると 大きく なる <b>相ぼう</b>を えらぼう</p>${btn('petPick', '相ぼうを えらぶ', 'btn-main')}</section>`;
+      <p>音読すると 大きく なる <b>相ぼう</b>を えらぼう</p>${btn('petPick', '相ぼうを えらぶ', 'btn-sub')}</section>`;
     const p = PETS[S.pet.kind], st = petStage(), e = petExp();
     const lo = PET_EXP[st - 1], hi = PET_EXP[st];
     const next = needForm() ? '<b>さいごの 進化！</b> すがたを えらぼう' : st >= 6 ? 'さいごまで 進化したよ！' : `ザコを あと <b>${hiki(hi - e)}</b> たおすと 進化！`;
@@ -2230,45 +2441,49 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const due = dueReviews().filter(x => !(x.id === DS.id && cur() === x.c));
     const dueBar = due.length ? `<section class="duebar"><p><b>${T('ふく習の 日！', A`復習の日です`)}</b> ${esc(DATASETS[due[0].id].title)}<br><small>${T('わすれかけた ころに やると よく おぼえるよ', A`忘れかけた頃にやると定着します`)}</small></p>
       ${btn('reviewDs', T(`▶ ふく習（${S.settings.minutes}分）`, A`▶ 復習（${S.settings.minutes}分）`), 'btn-main', `data-id="${due[0].id}" data-c="${due[0].c.id}"`)}</section>` : '';
-    const zukan = ENTRY ? '' : btn('mons', `🐾 図かん ${uniq(S.mons.map(m => m.sp)).length}/${MONS.length}`);
     const playedHere = S.sessions.some(s => s.day === today() && (cycleById(s.cycleId) || {}).datasetId === DS.id);
     const quizBtn = playedHere && canQuiz() && !ENTRY ? btn('quiz', quizMonToday() ? '❓ クイズを もう1回' : '❓ 今日の クイズ', 'btn-main btn-quiz') : '';
+    // 「ドリル・きろく・なかま」の3つ（ゲームの入口は「なかま」へ。学習の始めるボタンと同じ強さで並べない。UI/UX v1）
+    const nav = `<nav class="homenav${(ENTRY ? 1 : 0) + (c ? 0 : 1) ? ' two' : ''}" aria-label="メニュー">${btn('table', T('<span class="ni">📖</span>ドリルを 見る', A`<span class="ni">📖</span>ドリルを見る`), 'navbtn')}${c ? btn('graph', T('<span class="ni">📈</span>きろく', A`<span class="ni">📈</span>記録`), 'navbtn') : ''}${ENTRY ? '' : btn('mons', `<span class="ni">🐾</span>なかま<small>図かん ${uniq(S.mons.map(m => m.sp)).length}/${MONS.length}</small>`, 'navbtn')}</nav>`;
     let body = '';
     if (!c) {
       body = `
+        ${ADULT ? '' : `<section class="weekcard todaycard"><p class="wk-t">${T('今日の ドリル', A`今日のドリル`)}</p><p class="wk-name">${esc(DS.title)}</p>
+          <p class="wk-d">${T('7日間 つづけて おぼえよう', A`7日間続けて覚えます`)}</p>
+          <p class="wk-chg"><button type="button" class="linkbtn" data-act="pick">${T('ほかの ドリルに する ›', A`ほかのドリルにする ›`)}</button></p></section>`}
         <div class="actions first">${btn('start', '▶ 始める', 'btn-main')}</div>
         <section class="hero">
           <p class="lead">${T(`今日から <b>7日間</b>。<br>1日 <b>${S.settings.minutes}分</b>、声に 出して<br>速く 言うだけ。`, A`今日から<b>7日間</b>。<br>1日<b>${S.settings.minutes}分</b>、声に出して<br>速く言うだけ。`)}</p>
           <div class="sample">${twice(PAIR[ALL[0]])}</div>
         </section>
         ${ADULT ? adultWeek() + memCard(null) : ''}
-        <div class="row2">${btn('table', T('📖 ドリルを 見る', A`📖 ドリルを見る`))}${btn('pick', T('📚 ドリルを えらぶ', A`📚 ドリルを選ぶ`))}</div>
-        ${S.mons.length && zukan ? `<div class="row2">${zukan}</div>` : ''}`;
+        ${ADULT ? `<div class="row2">${btn('pick', A`📚 ドリルを選ぶ`)}</div>` : ''}
+        ${nav}`;
     } else if (c.kind === 'main' && !c.finishedAt) {
       const dn = dayNumber(c), doneToday = daysOf(c).includes(today());
       const ss = sessionsOf(c), last = ss[ss.length - 1];
       const t = titleFor(c), raw = titleRaw(c);
       const od = officialDays(c), need = S.settings.rewardDays;
-      body = `
-        <div class="actions first">
+      const lastRow = last ? `<div><dt>${T('前の 記ろく', A`前回の記録`)}</dt><dd>${lapsText(last.rowsDone, last.activeRows)}<small>（${minOf(last)}分）</small> <span class="tag ${last.official ? 'tag-off' : ''}">${last.official ? '公式' : '練習'}</span></dd></div>` : '';
+      const startBtn = `<div class="actions first">
           ${btn('start', doneToday ? `▶ もう1回（${S.settings.minutes}分）` : `▶ 始める（${S.settings.minutes}分）`, doneToday && !quizBtn ? 'btn-main btn-quiet' : doneToday ? 'btn-sub' : 'btn-main')}
           ${quizBtn}
-        </div>
-        ${ADULT ? A`${adultWeek()}${memCard(c)}
-        <p class="wk-chg adchg"><button type="button" class="linkbtn" data-act="pick">ほかのドリルにする ›</button></p>` : `<section class="weekcard">
+        </div>`;
+      const rowTitle = `<div><dt>${T('しょう号', A`称号`)}</dt><dd>${t ? `${t.t.icon} ${t.t.name}${raw && raw.next && raw.t === t.t ? `<small class="tnext">${T(`${raw.next.t.icon}まで あと ${raw.next.need.toFixed(1)}しゅう`, A`${raw.next.t.icon}まであと${raw.next.need.toFixed(1)}周`)}</small>` : ''}` : `<span class="muted">${T('公式 記ろくで 決まるよ', A`公式記録で決まります`)}</span>`}</dd></div>`;
+      const rowReward = ENTRY ? '' : `<div><dt>ごほうびまで</dt><dd>${S.rewardShown.includes(c.id) ? 'ゲット！' : `公式の日 <b>${od}</b> / ${need}`}</dd></div>`;
+      body = ADULT ? `${startBtn}${A`${adultWeek()}${memCard(c)}
+        <p class="wk-chg adchg"><button type="button" class="linkbtn" data-act="pick">ほかのドリルにする ›</button></p>`}
+        <dl class="mini">${lastRow}${rowTitle}${rowReward}</dl>
+        ${nav}` : `<section class="weekcard">
           <p class="wk-t">${T('今週の ドリル', A`今週のドリル`)}</p><p class="wk-name">${esc(DS.title)}</p>
           <p class="wk-d"><b>${doneToday ? daysOf(c).length : dn}${T('日め', A`日目`)}</b> / ${DAYS}日</p>
           ${rail(c)}
+          ${last ? `<p class="wk-last">${T('前の 記ろく', A`前回の記録`)}　<b>${lapsText(last.rowsDone, last.activeRows)}</b><small>（${minOf(last)}分）</small> <span class="tag ${last.official ? 'tag-off' : ''}">${last.official ? '公式' : '練習'}</span></p>` : ''}
           <p class="daynote">${doneToday ? T('今日の 音読は 終わったよ！ もう1回 やっても いいよ', A`今日の音読は完了です。もう1回やってもかまいません`) : T('7日 同じ ドリルで おぼえよう', A`7日間、同じドリルで覚えます`)}</p>
           <p class="wk-chg"><button type="button" class="linkbtn" data-act="pick">${T('ほかの ドリルに する ›', A`ほかのドリルにする ›`)}</button></p>
-        </section>`}
-        <dl class="mini">
-          ${last ? `<div><dt>${T('前の 記ろく', A`前回の記録`)}</dt><dd>${lapsText(last.rowsDone, last.activeRows)}<small>（${minOf(last)}分）</small> <span class="tag ${last.official ? 'tag-off' : ''}">${last.official ? '公式' : '練習'}</span></dd></div>` : ''}
-          <div><dt>${T('しょう号', A`称号`)}</dt><dd>${t ? `${t.t.icon} ${t.t.name}${raw && raw.next && raw.t === t.t ? `<small class="tnext">${T(`${raw.next.t.icon}まで あと ${raw.next.need.toFixed(1)}しゅう`, A`${raw.next.t.icon}まであと${raw.next.need.toFixed(1)}周`)}</small>` : ''}` : `<span class="muted">${T('公式 記ろくで 決まるよ', A`公式記録で決まります`)}</span>`}</dd></div>
-          ${ENTRY ? '' : `<div><dt>ごほうびまで</dt><dd>${S.rewardShown.includes(c.id) ? 'ゲット！' : `公式の日 <b>${od}</b> / ${need}`}</dd></div>`}
-        </dl>
-        <div class="row2">${zukan}${btn('graph', 'グラフ')}</div>
-        <div class="row2">${btn('table', T('📖 ドリルを 見る', A`📖 ドリルを見る`))}</div>
+        </section>${startBtn}
+        ${nav}
+        <dl class="mini">${rowTitle}${rowReward}</dl>
         ${painted() && !ENTRY ? btn('mapview', `🗾 日本地図 ${painted()} / 47`, 'btn-sub mapbtn') : ''}`;
     } else if (c.kind === 'main') {
       const from = addDays(c.finishedAt, REVIEW_FROM), to = addDays(c.finishedAt, REVIEW_TO);
@@ -2285,7 +2500,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
           <p>${T(`ふく習は <b>${md(from)}〜${md(to)}</b> ごろ。その日に なったら ホームに 出るよ。`, A`復習は<b>${md(from)}〜${md(to)}</b>ごろ。その日になるとホームに出ます。`)}</p>
           ${dueNow ? '' : `<p class="muted">${T('それまでは 次の ドリルを やろう。れんぞくも つづくよ！', A`それまでは次のドリルを進めましょう。連続記録も続きます。`)}</p>`}
         </section>${ADULT ? adultWeek() + memCard(c) : ''}
-        <div class="row2">${btn('graph', 'グラフ')}${zukan}</div>
+        ${nav}
         <div class="row2">${dueNow ? btn('pickGo', T('次の ドリルを えらぶ', A`次のドリルを選ぶ`)) : btn('review', T('ふく習を 早めに やる', A`復習を早めにやる`))}${btn('again', T('この ドリルを もう1回 7日間', A`このドリルをもう1回7日間`))}</div>`;
     } else {
       const ss = sessionsOf(c), back = S.settings.returnDs && S.settings.returnDs !== DS.id && DATASETS[S.settings.returnDs];
@@ -2300,14 +2515,15 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
           <h2>${ss.length ? T('ふく習 できた！', A`復習できました`) : T('ふく習', A`復習`)}</h2>
           <p>${T(`${esc(DS.title)}：苦手だった ものを 中心に <b>${c.pairCodes.length}こ</b>。${ss.length ? `<br>${ss.length}回 やったよ。` : ''}`, A`${esc(DS.title)}：苦手だったものを中心に<b>${c.pairCodes.length}個</b>。` + (ss.length ? A`<br>${ss.length}回やりました。` : ''))}</p>
         </section>${ADULT ? adultWeek() + memCard(c) : ''}
-        <div class="row2">${ss.length ? btn('start', T('もう1回 ふく習', A`もう1回復習`)) : ''}${btn('graph', 'グラフ')}${btn('again', T('新しく 7日間', A`新しく7日間`))}</div>`;
+        ${nav}
+        <div class="row2">${ss.length ? btn('start', T('もう1回 ふく習', A`もう1回復習`)) : ''}${btn('again', T('新しく 7日間', A`新しく7日間`))}</div>`;
     }
     return `
       <header class="top">
         <div><h1 class="brand">${brand()}</h1></div>
         ${ADULT ? `<button type="button" class="parent" data-act="parent" aria-label="${A`設定`}"><span>${A`設定`}</span></button>` : '<button type="button" class="parent" data-hold="parent" aria-label="おうちの人の画面（2秒 長おし）"><span>おうちの人</span><i></i></button>'}
       </header>
-      <main class="home">${dueBar}${petCard()}${ENTRY ? kukuBridge() : ''}${body}${masterRow()}${bossCard()}${(S.pet && !ENTRY) || (S.sessions.length && !ADULT) ? statsCard() : ''}
+      <main class="home">${dueBar}${ENTRY ? kukuBridge() : ''}${body}${masterRow()}${petCard()}${bossCard()}${(S.pet && !ENTRY) || (S.sessions.length && !ADULT) ? statsCard() : ''}
       ${ENTRY ? `<p class="kukulink"><button type="button" class="linkbtn" data-act="kukuParent">${T('おうちの方へ', A`使い方`)}</button></p>` : ''}</main>`;
   };
 
@@ -2334,8 +2550,15 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       const top = mine.reduce((a, b) => (b.pow > a.pow ? b : a));
       return `<button type="button" class="zk r${d.r || 1}${monEvo(i) ? ' evo' : ''}" data-act="monInfo" data-v="${i}"><span class="zkpic">${monPic(i)}</span><p class="mn">${d.name}</p><p class="zkn">×${mine.length}　${monEvo(i) ? '<i class="evotag">進化</i>' : stars(top.star)}</p></button>`;
     };
-    return `<header class="bar"><h2>図かん ${kinds} / ${MONS.length}</h2><p class="hint">なかま ${hiki(ms.length)}。同じ しゅるいが ${hiki(MON_EVO)} そろうと 進化！ クイズで 7わり せいかい（1日1ぴき）か、音読で ザコを ${hiki(EGG_NEED)} たおすと たまごが かえるよ。</p>
+    // ゲームの入口は ここに あつめる（ホームは 音読が 主役。UI/UX v1）
+    const hubBtns = [canQuiz() ? btn('quiz', hasMap() ? '🗾 クイズで 地図を ぬろう' : '❓ 言えるかな クイズ', 'btn-sub btn-quiz') : '',
+      canQuiz() ? btn('master', isMaster() ? '🏆 マスター（もう1回）' : '🏆 マスター テスト', 'btn-sub btn-master') : '',
+      canQuiz() ? btn('ask', '🎤 問題を 出して！', 'btn-sub btn-ask') : '',
+      masterCount() ? btn('badges', `🏅 マスター バッジ ${masterCount()} / ${visibleDs().length}`, 'btn-sub') : '',
+      painted() ? btn('mapview', `🗾 日本地図 ${painted()} / 47`, 'btn-sub') : ''].filter(Boolean).join('');
+    return `<header class="bar"><h2>なかま・図かん ${kinds} / ${MONS.length}</h2><p class="hint">なかま ${hiki(ms.length)}。同じ しゅるいが ${hiki(MON_EVO)} そろうと 進化！ クイズで 7わり せいかい（1日1ぴき）か、音読で ザコを ${hiki(EGG_NEED)} たおすと たまごが かえるよ。</p>
       ${eggGauge(S.egg || 0)}</header>
+      <div class="hub">${petCard()}${bossCard()}${hubBtns ? `<div class="hubbtns">${hubBtns}</div>` : ''}</div>
       ${team.length ? `<h3 class="bosswon-h">ボスと たたかう チーム（強い 3びき）</h3><main class="monlist team3">${team.map(m => `<div>${monCard(m)}</div>`).join('')}</main>` : ''}
       <main class="zukan">${MONS.map(cell).join('')}</main>
       ${S.bossWins.length ? `<h3 class="bosswon-h">たおした ボス</h3><main class="monlist">${S.bossWins.map(w => { const b = bossOf(w.k); return `<div class="moncard">${critter(b)}<p class="mn">${b.name}</p><small>${md(w.day)}</small></div>`; }).join('')}</main>` : ''}
@@ -2355,16 +2578,22 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
 
   const SUBJECTS = (typeof META !== 'undefined' && META.subjects && Object.keys(META.subjects).length) ? Object.entries(META.subjects) : [['shakai', '社会'], ['rika', '理科'], ['sansu', '算数'], ['kokugo', '国語']];   // 教科タブ（data/index.json の subjects。D-119）
   SCREENS.pick = function () {
+    let recId = null;   // おすすめ：まだ やっていない ドリルの 先頭（新しい ロジックは 足さない。今ある 並びの ままの 目印）
     const item = id => {
       const d = DATASETS[id], cs = cyclesOfDs(id), c = cs[cs.length - 1];
-      let st = T('まだ', A`未着手`);
+      let st = T('まだ', A`未着手`), days = 0, tag = '';
       if (c) {
-        const days = uniq(S.sessions.filter(s => s.cycleId === c.id).map(s => s.day)).length;
+        days = uniq(S.sessions.filter(s => s.cycleId === c.id).map(s => s.day)).length;
         const t = c.kind === 'main' && c.finishedAt ? titleFor(c) : null;
         st = c.kind === 'review' ? T('ふく習', A`復習`) : c.finishedAt ? T(`7日 クリア${t ? ' ' + t.t.icon : ''}`, A`7日間クリア${t ? ' ' + t.t.icon : ''}`) : T(`${days}日め まで`, A`${days}日目まで`);
+        if (c.finishedAt) days = DAYS;
       }
+      if (id === DS.id) tag = T('いまの ドリル', A`現在のドリル`);
+      else if (c && !c.finishedAt && c.kind === 'main') tag = T('つづき', A`続き`);
+      else if (!c && recId === id) tag = T('おすすめ', A`次の候補`);
+      const dots = `<span class="pdots" aria-hidden="true">${Array.from({ length: DAYS }, (_, i) => `<i class="${i < days ? 'on' : ''}"></i>`).join('')}</span>`;
       return `<button type="button" class="pickitem ${id === DS.id ? 'on' : ''}" data-act="pickDs" data-id="${id}">
-        ${dsTitle(d)}<span class="pmeta">${T(`${d.pairs.filter(shown).length}こ ・ ${st}`, A`${d.pairs.filter(shown).length}個・${st}`)}</span></button>`;
+        ${tag ? `<span class="ptag">${tag}</span>` : ''}${dsTitle(d)}<span class="pmeta">${T(`${d.pairs.filter(shown).length}こ ・ ${st}`, A`${d.pairs.filter(shown).length}個・${st}`)}</span>${dots}</button>`;
     };
     // 教科ごとに分ける。いまの表の教科を はじめに開く
     const subj = ui.pickSubj || DS.subject || 'shakai';
@@ -2374,6 +2603,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     // はじめは おすすめ 3つだけ（今の ドリル → と中の ドリル → まだ やっていない ドリル → クリアした ドリル）。いっぱい 見せると おどろく（D-108）
     const rank = id => { const cs = cyclesOfDs(id), c = cs[cs.length - 1]; return id === DS.id ? 0 : !c ? 2 : c.finishedAt ? 3 : 1; };
     const top = ui.pickAll ? ids : ids.map((id, i) => [rank(id), i, id]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, PICK_TOP).map(x => x[2]);
+    recId = ids.find(id => top.includes(id) && id !== DS.id && !cyclesOfDs(id).length) || null;
     const items = ids.filter(id => top.includes(id)).map(item).join('');
     const more = ids.length - top.length;
     return `<header class="bar"><h2>${T('どの ドリルに する？', A`どのドリルにしますか`)}</h2><p class="hint">${T('1つの ドリルを 7日間 つづけるよ。', A`1つのドリルを7日間続けます。`)}</p>${tabs}</header>
@@ -2500,12 +2730,12 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     if (!S.settings.seenRunHint) hint = `<p class="runhint">${T('1行 言えたら ↓を おす', A`1行言えたら↓を押す`)}</p>`;
     else if (!R.rows.length && !ADULT) hint = `<p class="runhint">どれも 2回 つづけて 言う</p>`;   // 毎回 わすれないように（D-108）。大人は 上の 読み方の1行で 足りる
     else if (hide && !S.settings.seenPeekHint && !ADULT) hint = `<p class="runhint">出ないときは ？に タッチして 見る</p>`;
-    // 読み方の1行（いつも出す）：今の 行の 1つめで「現金 資産、現金 資産」と 続けて 2回（D-121 百式の 基本）
+    // 読み方の1行（いつも出す。切りつめ（…）に なっても やることが 見えるよう、「何を するか」を 先に・例は あとに。D-141）：今の 行の 1つめで「現金 資産、現金 資産」と 続けて 2回（D-121 百式の 基本）
     const p1 = PAIR[info.codes.find(k => mark(c, k) !== 'known') || info.codes[0]];
     const howread = `<p class="howread">${hide
-      ? T(`読みかた：<b>${esc(sayText(p1, true))}</b>— ？を 思い出して 言う。出ないときは ？に タッチ`, A`読み方：<b>${esc(sayText(p1, true))}</b>— ？を思い出して言う。出ないときは？に触れる`)
-      : T(`読みかた：<b>${esc(sayText(p1))}</b>と つづけて 2回`, A`読み方：<b>${esc(sayText(p1))}</b>と続けて2回`)}</p>`;
-    const bub = S.settings.seenRunHint ? '' : `<p class="firstbub">${T('この 行を 上から じゅんに、1つずつ「問い 答え」を 2回', A`この行を上から順に、1つずつ「問い 答え」を2回`)}</p>`;
+      ? T(`読みかた：？を 思い出して 言う <b>${esc(sayText(p1, true))}</b>。出ないときは ？に タッチ`, A`読み方：？を思い出して言う <b>${esc(sayText(p1, true))}</b>。出ないときは？に触れる`)
+      : T(`読みかた：2回 つづけて 言う <b>${esc(sayText(p1))}</b>`, A`読み方：続けて2回 <b>${esc(sayText(p1))}</b>`)}</p>`;
+    const bub = S.settings.seenRunHint ? '' : `<p class="firstbub">${T('上から 1つずつ「問い 答え」を 2回', A`上から順に1つずつ「問い 答え」を2回`)}</p>`;
     if (!R.zk) { const hp = zakoHp(c, R.mode, R.act); R.zk = { hp, max: hp, n: 0 }; }   // 前の と中の 記ろくには ない
     const zd = zakoOf();
     return `
@@ -2877,31 +3107,35 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
         <p class="eggnote">${egg.hatched.length ? `たまごが ${egg.hatched.length > 1 ? `${egg.hatched.length}こ ` : ''}かえった！ ${egg.hatched.map(h => MONS[h.mon.sp].name).join('・')}` : egg.wait ? 'たまごは いっぱい。あした かえるよ！' : `ザコを ${hiki(EGG_NEED)} たおすと たまごが かえるよ`}</p></section>` : '';
     let cand = [];
     if (c.kind === 'main') cand = uniq([...s.peeks, ...(c.notYet || []), ...quizMissed(c)]).filter(k => mark(c, k) !== 'known' && c.pairCodes.includes(k)).slice(0, 12);
-    return `<main class="result">
-      ${best ? `<div class="medal"><svg viewBox="0 0 60 64" aria-hidden="true"><path d="M17 2h11l6 18H23zM43 2H32l-6 18h11z" fill="var(--answer)"/><circle cx="30" cy="42" r="20" fill="var(--gold)"/><circle cx="30" cy="42" r="14.5" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/><path d="M30 33l2.9 6 6.5.7-4.9 4.4 1.4 6.4L30 47.3l-5.9 3.2 1.4-6.4-4.9-4.4 6.5-.7z" fill="#fff" opacity=".9"/></svg><b>${T('自分の 新ベスト！', A`自己ベスト更新`)}</b></div>` : ''}
-      ${evolved ? (needForm() ? `<div class="petup evo">${petPic()}<b>${PETS[S.pet.kind].name}が さいごの 進化を しそう！</b>${btn('formPick', '✨ すがたを えらぶ', 'btn-main')}</div>`
+    // 表示の順：達成 → 今日の周回・のび → つづき（もう1ラウンド・クイズ。D-92：小さい画面でも 見える所に）→ 相棒・たまごの変化 → グラフ → ホームへ（UI/UX v1）
+    const headline = s.partial ? T('ここまで できたね！', A`ここまでの記録です`) : best ? T('おわり！ すごい！', A`完了・自己ベスト更新`) : s.official ? T('おわり！ よくできたね！', A`完了しました`) : T('おわり！ できたね！', A`完了しました`);
+    const gains = [
+      evolved ? (needForm() ? `<div class="petup evo">${petPic()}<b>${PETS[S.pet.kind].name}が さいごの 進化を しそう！</b>${btn('formPick', '✨ すがたを えらぶ', 'btn-main')}</div>`
           : `<div class="petup evo">${petPic()}<b>${PETS[S.pet.kind].name}が 進化した！ <span>${petStage()}だんかい</span></b></div>`)
-        : levelUp ? `<div class="petup">${petPic()}<b>${PETS[S.pet.kind].name} レベルアップ！ <span>レベル ${playDays().length + 1}</span></b></div>` : ''}
-      ${titleUp ? `<div class="banner gold">${T(`${titleUp.icon} しょう号が「${titleUp.name}」に 上がった！`, A`${titleUp.icon} 称号が「${titleUp.name}」に上がりました`)}</div>` : ''}
-      ${cleared ? `<div class="banner">${T(`7日 クリア！ ふく習は ${md(addDays(c.finishedAt, REVIEW_FROM))}ごろ（おうちの人に 言っておこう）`, A`7日間クリア。復習は${md(addDays(c.finishedAt, REVIEW_FROM))}ごろです`)}</div>` : ''}
-      ${rewardNow && !ENTRY ? `<div class="banner gold">ごほうび ゲット！ ${esc(S.settings.reward || 'おうちの人に 見せよう！')}</div>` : ''}
-      <div class="res-top">${stamp}
+        : levelUp ? `<div class="petup">${petPic()}<b>${PETS[S.pet.kind].name} レベルアップ！ <span>レベル ${playDays().length + 1}</span></b></div>` : '',
+      titleUp ? `<div class="banner gold">${T(`${titleUp.icon} しょう号が「${titleUp.name}」に 上がった！`, A`${titleUp.icon} 称号が「${titleUp.name}」に上がりました`)}</div>` : '',
+      cleared ? `<div class="banner">${T(`7日 クリア！ ふく習は ${md(addDays(c.finishedAt, REVIEW_FROM))}ごろ（おうちの人に 言っておこう）`, A`7日間クリア。復習は${md(addDays(c.finishedAt, REVIEW_FROM))}ごろです`)}</div>` : '',
+      rewardNow && !ENTRY ? `<div class="banner gold">ごほうび ゲット！ ${esc(S.settings.reward || 'おうちの人に 見せよう！')}</div>` : '',
+      zres,
+      s.bonus && !ENTRY ? `<p class="tbonus">⏱ ${s.min}分 さい後まで！ ボーナス ザコ <b>+${s.bonus}</b>ひき</p>` : '',
+      s.autoAdd && s.autoAdd.length ? `<p class="autow">${T(`出てこなかった <b>${s.autoAdd.length}こ</b> は、次から ★（4回 言う）に したよ。<br><small>のぞかずに 言えたら ★は きえるよ</small>`, A`出てこなかった<b>${s.autoAdd.length}個</b>は、次から★（4回言う）にしました。<br><small>答えを見ずに言えたら★は外れます</small>`)}</p>` : ''
+    ].filter(Boolean).join('');
+    const nextAct = [bossOpen() ? btn('boss', '⚔ ボスが あらわれた！ ちょうせん', 'btn-main btn-boss') : '',
+      roundOK && near.length ? `<div class="near"><b>${T('おしい！', A`あと少し`)}</b>${near.slice(0, 2).map(x => `<p>${x}</p>`).join('')}</div>` : '',
+      roundOK ? btn('round', `▶ もう1ラウンド（${S.settings.minutes}分）`, 'btn-main btn-round') : '',
+      canQuiz() && !ENTRY ? btn('quiz', `${hasMap() ? '🗾 クイズで 地図を ぬろう' : '❓ 言えるかな クイズ'}（${Math.min(QUIZ_N, quizPairs().length)}問）${quizMonToday() ? '' : '<small>7問 せいかいで モンスター</small>'}`, 'btn-sub btn-quiz') : '',
+      shareBtn()].join('');
+    return `<main class="result">
+      <section class="res-hero ${s.official && !s.partial ? 'off' : 'prac'}">${stamp}<div><h1 class="res-msg">${headline}</h1>${msg ? `<p class="res-sub">${msg}</p>` : ''}</div></section>
+      ${best ? `<div class="medal"><svg viewBox="0 0 60 64" aria-hidden="true"><path d="M17 2h11l6 18H23zM43 2H32l-6 18h11z" fill="var(--answer)"/><circle cx="30" cy="42" r="20" fill="var(--gold)"/><circle cx="30" cy="42" r="14.5" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/><path d="M30 33l2.9 6 6.5.7-4.9 4.4 1.4 6.4L30 47.3l-5.9 3.2 1.4-6.4-4.9-4.4 6.5-.7z" fill="#fff" opacity=".9"/></svg><b>${T('自分の 新ベスト！', A`自己ベスト更新`)}</b></div>` : ''}
+      <div class="res-top">
         <div><p class="label">${T('今日の しゅう回', A`今日の周回`)}</p><p class="big">${lapsText(s.rowsDone, s.activeRows)}</p>
         ${grow ? `<p class="label">${T('一番 のびた 行', A`一番伸びた行`)}</p><p class="mid">${rowLabel(grow.r.row)} ▲${sec(grow.d)}秒</p>` : ''}</div>
       </div>
-      ${msg ? `<p class="hint">${msg}</p>` : ''}
-      <div class="actions first">
-        ${bossOpen() ? btn('boss', '⚔ ボスが あらわれた！ ちょうせん', 'btn-main btn-boss') : ''}
-        ${roundOK && near.length ? `<div class="near"><b>${T('おしい！', A`あと少し`)}</b>${near.slice(0, 2).map(x => `<p>${x}</p>`).join('')}</div>` : ''}
-        ${roundOK ? btn('round', `▶ もう1ラウンド（${S.settings.minutes}分）`, 'btn-main btn-round') : ''}
-        ${canQuiz() && !ENTRY ? btn('quiz', `${hasMap() ? '🗾 クイズで 地図を ぬろう' : '❓ 言えるかな クイズ'}（${Math.min(QUIZ_N, quizPairs().length)}問）${quizMonToday() ? '' : '<small>7問 せいかいで モンスター</small>'}`, 'btn-main btn-quiz') : ''}
-        ${btn('home', 'ホームへ', (canQuiz() && !ENTRY) || bossOpen() || roundOK ? 'btn-sub' : 'btn-main')}
-        ${shareBtn()}
-      </div>
+      ${nextAct ? `<div class="actions first resnext">${nextAct}</div>` : ''}
+      ${gains ? `<section class="res-gains">${gains}</section>` : ''}
       ${feelBox(s)}
-      ${zres}
-      ${s.bonus && !ENTRY ? `<p class="tbonus">⏱ ${s.min}分 さい後まで！ ボーナス ザコ <b>+${s.bonus}</b>ひき</p>` : ''}
-      ${s.autoAdd && s.autoAdd.length ? `<p class="autow">${T(`出てこなかった <b>${s.autoAdd.length}こ</b> は、次から ★（4回 言う）に したよ。<br><small>のぞかずに 言えたら ★は きえるよ</small>`, A`出てこなかった<b>${s.autoAdd.length}個</b>は、次から★（4回言う）にしました。<br><small>答えを見ずに言えたら★は外れます</small>`)}</p>` : ''}
+      <div class="resgraph">${btn('graph', T('📈 きろくの グラフを 見る', A`📈 記録のグラフを見る`), 'btn-sub')}</div>
       ${c.kind === 'main' ? `<section class="cands">${cand.length ? `<h3>${T(`苦手 こうほ <small>タッチで ★（4回 言う）。1行 ${WEAK_MAX}こ まで</small>`, A`苦手の候補 <small>タップで★（4回言う）。1行${WEAK_MAX}個まで</small>`)}</h3><div class="tiles">${cand.map(k => weakTile(c, k)).join('')}</div>` : ''}
         ${btn('marks', T('★苦手・言える を じぶんで つける', A`★苦手・言えるを自分でつける`), 'btn-sub marksbtn')}</section>` : ''}
       <details class="more"><summary>${T('行の タイムと グラフ', A`行のタイムとグラフ`)}</summary>
@@ -2909,6 +3143,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
         <figure class="chart small"><figcaption>${T(`しゅう回の グラフ（${s.mode === 'hide' ? 'かくして' : '見ながら'}・${minOf(s)}分）`, A`周回のグラフ（${modeName(s.mode)}・${minOf(s)}分）`)}</figcaption>${barChart(c, s.mode, s.day, minOf(s))}</figure>
         <div class="row2">${btn('graph', T('くわしい グラフ', A`詳しいグラフ`))}</div>
       </details>
+      <footer class="dock homedock">${btn('home', 'ホームへ', 'btn-main')}</footer>
     </main>`;
   };
 
@@ -3297,6 +3532,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   function masterRow() {   // ホームの 下の 2つの ボタン
     if (!canQuiz()) return '';
     return `<div class="row2 mrow">${btn('master', isMaster() ? '🏆 マスター（もう1回）' : T('🏆 マスター テスト', A`🏆 マスターテスト`), 'btn-sub btn-master')}${ENTRY ? '' : btn('ask', '🎤 問題を 出して！', 'btn-sub btn-ask')}</div>
+      ${isMaster() ? btn('certView', T('🏆 にんてい しょうを 見せる', A`🏆 認定証を見せる`), 'btn-sub mapbtn', `data-id="${DS.id}"`) : ''}
       ${masterCount() ? btn('badges', T(`🏅 マスター バッジ ${masterCount()} / ${visibleDs().length}`, A`🏅 マスターバッジ ${masterCount()} / ${visibleDs().length}`), 'btn-sub mapbtn') : ''}`;
   }
   // マスター テスト：表の 全部を バラバラに。4択・とばす なし。全問 せいかいで 認定
@@ -3346,20 +3582,23 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const z = ui.mt, q = z.qs[z.i];
     if (!q) return SCREENS.masterEnd();
     const p = PAIR[q.code], fb = z.fb;
-    // 押しまちがい 対策（D-124）：押すと えらぶだけ（ほかを 押せば えらび直せる）。「これで けってい」で 答える
+    // 押しまちがい 対策（D-124・D-135）：押すと えらぶだけ（ほかを 押せば えらび直せる。✔ と 色で 分かる）。「これで けってい」は 下の ドックに 離して おく
     const choices = q.ch.map((c, i) => {
       const cls = fb ? (ansText(PAIR[c]) === ansText(p) ? 'right' : fb.pick === i ? 'wrong' : 'dim') : z.sel === i ? 'sel' : '';
       return `<button type="button" class="qch ${cls}" data-act="masterPick" data-v="${i}" ${fb ? 'disabled' : ''} aria-pressed="${!fb && z.sel === i}">${rb(ans(PAIR[c]))}</button>`;
     }).join('');
-    const okBtn = fb ? '' : `<button type="button" class="btn btn-main mok" data-act="masterOk" ${z.sel == null ? 'disabled' : ''}>${z.sel == null ? T('こたえを えらんでね', A`答えを選んでください`) : T('✔ これで けってい！', A`✔ これで決定`)}</button>`;
     const to = DS.subject === 'sansu' ? '＝' : ' → ';
-    const card = fb && !fb.ok ? `<div class="qcard ng" role="dialog"><div class="qtx"><p class="qres">${T('✕ おしい！', A`✕ 不正解`)}</p><p class="qa">${rb(p.q)}${to}<b>${rb(ans(p))}</b></p></div>
-      ${btn('masterNext', z.i + 1 >= z.qs.length ? T('けっかを 見る', A`結果を見る`) : T('次の 問題 ▶', A`次の問題 ▶`), 'btn-main')}</div>`
-      : fb ? `<div class="qcard ok" role="status"><div class="qtx"><p class="qres">${T('⭕ せいかい！', A`⭕ 正解`)}</p><p class="qa">${rb(p.q)}${to}<b>${rb(ans(p))}</b></p></div></div>` : '';   // せいかいも その場で 見せる（D-115 お母さん）
+    const okBtn = `<button type="button" class="btn btn-main mok" data-act="masterOk" ${z.sel == null ? 'disabled' : ''}>${z.sel == null ? T('こたえを えらんでね', A`答えを選んでください`) : T('✔ これで けってい！', A`✔ これで決定`)}</button>`;
+    const wait = fb && Date.now() - fb.at < 450;   // 答えた 直後 0.45秒は うすく して 押せない 見た目（固まって 見えない。D-140）
+    const nextBtn = btn('masterNext', z.i + 1 >= z.qs.length ? T('けっかを 見る', A`結果を見る`) : T('次の 問題 ▶', A`次の問題 ▶`), 'btn-main mnext', wait ? 'disabled' : '');
+    // 答えた あと：結果の 1行（せいかいも その場で 見せる。D-115）。ボタンは けってい と 同じ 場所（画面の 下）に 出す＝次へ 行く ボタンが 画面の 外に ならない
+    const res = !fb ? '' : fb.ok ? `<p class="mres ok" role="status">${T('⭕ せいかい！', A`⭕ 正解`)}<span>${rb(p.q)}${to}<b>${rb(ans(p))}</b></span></p>`
+      : `<p class="mres ng" role="status">${T('✕ おしい！', A`✕ 不正解`)}<span>${rb(p.q)}${to}<b>${rb(ans(p))}</b></span></p>`;
+    const dock = fb ? (fb.ok ? '' : nextBtn) : okBtn;
     const pct = Math.round(z.i / z.qs.length * 100);
     return `<header class="qhead"><p class="qno">${z.dan ? (z.danLabel || `${z.dan}の だん`) : T('🏆 マスター テスト', A`🏆 マスターテスト`)} <b>${z.i + 1}</b> / ${z.qs.length}${z.miss.length ? `　<span class="mmiss">${T('まちがい', A`間違い`)} ${z.miss.length}</span>` : ''}</p>
         <div class="mbar"><i style="width:${pct}%"></i></div><p class="qq">${quizQuestion(p)}</p></header>
-      <main class="quiz mquiz ${fb ? 'answered' : ''}"><div class="qchoices">${choices}</div>${okBtn}${card}</main>`;
+      <main class="quiz mquiz ${fb ? 'answered' : ''}"><div class="qchoices">${choices}</div>${res}<div class="mdock">${dock}</div></main>`;
   };
   function masterSel(i) {   // えらぶだけ（まだ 答えない）
     const z = ui.mt;
@@ -3368,11 +3607,21 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
   }
   function masterPick(i) {
     const z = ui.mt;
-    if (!z || z.fb || i == null) return;
+    if (!z || z.fb || i == null || z.busy) return;   // 1問で 1回だけ（連打・二重送信を 無視。D-135）
+    z.busy = true;
     const q = z.qs[z.i], p = PAIR[q.code], ok = ansText(PAIR[q.ch[i]]) === ansText(p);
-    z.fb = { ok, pick: i }; z.sel = null;
-    if (ok) { z.ok++; SND.lap(); render(); setTimeout(() => { if (ui.mt === z && z.fb) { z.fb = null; z.i++; render(); } }, 900); }   // せいかいは テンポよく 次へ（見える 長さに。D-115）
-    else { z.miss.push(q.code); SND.nope(); render(); }
+    z.fb = { ok, pick: i, at: Date.now() }; z.sel = null;
+    if (ok) { z.ok++; SND.lap(); render(); setTimeout(() => { if (ui.mt === z && z.fb) { z.fb = null; z.busy = false; z.i++; render(); } }, 900); }   // せいかいは テンポよく 次へ（見える 長さに。D-115）
+    else {
+      z.miss.push(q.code); SND.nope(); render();
+      setTimeout(() => { if (ui.mt === z && z.fb) { const b = document.querySelector('.mnext'); if (b) b.disabled = false; } }, 460);   // 再描画は しない（指が 触れている 最中に ボタンを 作り直さない）
+    }
+  }
+  // 「次の問題」：けってい の 連打で そのまま 次へ とばない（答えた 直後 0.45秒は 無視。同じ 場所に 出るため。D-135）
+  function masterNext() {
+    const z = ui.mt;
+    if (!z || !z.fb || z.fb.ok || Date.now() - z.fb.at < 450) return;
+    z.fb = null; z.busy = false; z.i++; render(); window.scrollTo(0, 0);
   }
   SCREENS.masterEnd = function () {
     const z = ui.mt;
@@ -3384,29 +3633,34 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
       S.masterLog = S.masterLog || [];
       S.masterLog.push({ day: today(), ds: DS.id, n: z.qs.length, ok: z.ok, ms: Date.now() - z.startedAt });
       if (S.masterLog.length > 500) S.masterLog = S.masterLog.slice(-500);
-      if (all && !S.masters[DS.id]) { S.masters[DS.id] = { day: today(), n: z.qs.length }; if (!ENTRY) z.gift = newMon('master', true, { minR: 2, minStar: 4 }); gs('master', DS.id); if (Object.keys(S.masters).length === 1) gs('peak', 'main'); }   // はじめての 認定は レアな なかま（D-107）。九九は 認定しょうと バッジだけ（D-116）
+      if (all && !S.masters[DS.id]) { S.masters[DS.id] = Object.assign({ day: today(), n: z.qs.length }, S.settings.gradeSet && !ADULT && !ENTRY ? { g: S.settings.grade } : {}); if (!ENTRY) z.gift = newMon('master', true, { minR: 2, minStar: 4 }); gs('master', DS.id); if (Object.keys(S.masters).length === 1) gs('peak', 'main'); }   // はじめての 認定は レアな なかま（D-107）。九九は 認定しょうと バッジだけ（D-116）
       save();
       if (all) setTimeout(() => { SND.fanfare(); confetti(); setTimeout(() => { SND.stamp(); sparks(30); }, 900); }, 200);
     }
     if (z.ok === z.qs.length) {
       const nx = nextDs();
-      return `<main class="center mend">${z.first ? `<p class="end">${T('にんてい！', A`認定`)}</p>` : `<p class="end">${T('ぜんぶ せいかい！', A`全問正解`)}</p>`}
-        ${certHTML(DS.id)}
+      return `<main class="center mend mclear"><p class="end mhead">${z.first ? T('🎉 にんてい！', A`🎉 認定`) : T('🎉 ぜんぶ せいかい！', A`🎉 全問正解`)}</p>
+        <p class="msub">${T(`${z.qs.length}問中 ${z.ok}問 せいかい！`, A`${z.qs.length}問中${z.ok}問正解`)}</p>
+        <div class="certprev" data-act="certView" data-id="${DS.id}">${certHTML(DS.id)}</div>
+        ${btn('certView', T('🏆 にんてい しょうを 見せる', A`🏆 認定証を見せる`), 'btn-main btn-show', `data-id="${DS.id}"`)}
         ${z.gift ? `<section class="mgift"><p class="mgt">マスターの ごほうび！</p><div class="mgpic">${monPic(z.gift.mon.sp)}</div>
           <p><b>${MONS[z.gift.mon.sp].name}</b>（${RARE[MONS[z.gift.mon.sp].r || 1]}）${stars(z.gift.mon.star)} が なかまに なった${z.gift.isNew ? '<br><b class="mnew">はじめて 会った！</b>' : ''}</p>
           <p class="small">チームの 強さも +${MASTER_POW}</p></section>` : ''}
         ${ENTRY ? (ENTRY.certLine ? `<p class="hint">${ENTRY.certLine}</p>` : '') : '<p class="hint">おうちの人や 友だちに 見せよう！「問題を 出して！」で 出してもらうのも いいよ</p>'}
         ${ENTRY ? kukuBridge() : ''}
-        <div class="actions">${nx ? btn('pickDs', T(`▶ 次の ドリルへ（${esc(DATASETS[nx].title)}）`, A`▶ 次のドリルへ（${esc(DATASETS[nx].title)}）`), 'btn-main', `data-id="${nx}"`) : ''}
+        <div class="actions">${nx ? btn('pickDs', T(`▶ 次の ドリルへ（${esc(DATASETS[nx].title)}）`, A`▶ 次のドリルへ（${esc(DATASETS[nx].title)}）`), 'btn-sub', `data-id="${nx}"`) : ''}
         <div class="row2">${ENTRY ? '' : btn('ask', '🎤 問題を 出して！')}${btn('certPrint', T('🖨 いんさつ', A`🖨 印刷`), 'btn-sub', `data-id="${DS.id}"`)}</div>
-        ${btn('home', 'ホームへ', nx || kukuBridge() ? 'btn-sub' : 'btn-main')}</div></main>`;
+        ${btn('home', 'ホームへ', 'btn-sub')}</div></main>`;
     }
+    // 未達成：できた ところを ほめて、「あと◯問」。もう1回 ちょうせん を いちばん 押しやすい 下に 固定（D-135）
     const left = z.qs.length - z.ok;
-    return `<main class="center mend"><p class="end">${T(`あと ${left}問！`, A`あと${left}問`)}</p>
-      <p class="big">${T(`${z.ok} / ${z.qs.length}問 せいかい`, A`${z.ok} / ${z.qs.length}問正解`)}</p>
+    return `<main class="center mend mmissed"><p class="end mhead">${z.ok ? T(`${z.ok}問 せいかい！`, A`${z.ok}問正解`) : T('ここから スタート！', A`ここから始めましょう`)}</p>
+      <p class="msub">${T(`マスターまで あと ${left}問！`, A`マスターまであと${left}問`)}</p>
+      <div class="mbar big"><i style="width:${Math.round(z.ok / z.qs.length * 100)}%"></i></div>
       <p class="hint">${T('まちがえた 問題を 音読で ぐるぐる 言ってから、もう1回 ちょうせん しよう', A`間違えた問題を音読で回してから、もう一度挑戦しましょう`)}</p>
+      <p class="mlisth">${T('もういちど 見る 問題', A`もう一度見る問題`)}</p>
       <ul class="wweak">${z.miss.map(k => `<li>${rb(PAIR[k].q)} → <b>${rb(ans(PAIR[k]))}</b></li>`).join('')}</ul>
-      <div class="actions">${btn('master', T('もう1回 ちょうせん', A`もう一度挑戦`), 'btn-main')}${btn('home', 'ホームへ')}</div></main>`;
+      <div class="actions mdock2">${btn('master', T('もう1回 ちょうせん', A`もう一度挑戦`), 'btn-main')}${btn('home', 'ホームへ', 'btn-sub')}</div></main>`;
   };
   function danEnd(z) {
     if (!z.saved) {   // 記ろくは のこす（dan つき。マスターの 回数には 入れない）
@@ -3436,20 +3690,28 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     const go2 = nx.to === 'main' ? btn('kukuExit', nx.btn, 'btn-main') : btn('entryGo', nx.btn, 'btn-main', `data-id="${esc(nx.to)}"`);
     return `<section class="kukubridge"><p class="kbt">${nx.title}</p><p>${nx.text}</p>${go2}</section>`;
   }
-  function certHTML(id) {
-    const m = S.masters[id], d = DATASETS[id];
-    if (ADULT) return A`<div class="cert"><p class="cert-t">認定証</p><p class="cert-ds">${esc(d.title)}</p>
-      <p class="cert-m">マスター</p><p class="cert-b">${m.n}問すべて正解しました。</p>
-      <p class="cert-d">${ymdJa(m.day)}　${brand()}</p><span class="cert-seal">🏆</span></div>`;
-    return `<div class="cert"><p class="cert-t">にんてい しょう</p><p class="cert-ds">${esc(d.title)}</p>
-      <p class="cert-m">マスター</p><p class="cert-b">${m.n}問 ぜんぶ せいかい しました。<br>よく おぼえました！</p>
-      <p class="cert-d">${ymdJa(m.day)}　${brand()}</p><span class="cert-seal">🏆</span></div>`;
+  function certHTML(id) {   // 教材名・学年（表データに あれば）・正答数・達成日。名前は なくても 成り立つ（D-135）
+    // 学年＝認定した 時に 記録した m.g だけ（現在の 設定は 使わない）。九九・大人・未設定・g の ない 過去の 認定は 出さない（D-143）。教材の 対象学年は「対象：」と 別に 小さく（D-139）
+    const m = S.masters[id], d = DATASETS[id], own = m && m.g >= 2 && m.g <= 6 && !ADULT && !ENTRY ? `<p class="cert-g">小${m.g}</p>` : '';
+    const gr = own + (d.grade ? `<p class="cert-tg">${T('たいしょう：', A`対象：`)}${esc(d.grade)}</p>` : '');
+    if (ADULT) return A`<div class="cert"><span class="cert-seal">🏆</span><p class="cert-t">認定証</p><p class="cert-ds">${esc(d.title)}</p>${gr}
+      <p class="cert-m">マスター</p><p class="cert-b"><b class="cert-n">${m.n}問中${m.n}問</b>正解</p>
+      <p class="cert-d">達成日 ${ymdJa(m.day)}</p><p class="cert-by">${brand()}</p></div>`;
+    return `<div class="cert"><span class="cert-seal">🏆</span><p class="cert-t">にんてい しょう</p><p class="cert-ds">${esc(d.title)}</p>${gr}
+      <p class="cert-m">マスター</p><p class="cert-b"><b class="cert-n">${m.n}問中 ${m.n}問</b> せいかい！<br>よく おぼえました！</p>
+      <p class="cert-d">たっせいび ${ymdJa(m.day)}</p><p class="cert-by">${brand()}</p></div>`;
+  }
+  // 認定証を 画面いっぱいに（家族に 見せる）。ほかの ボタンは 隠し、とじる と 印刷だけ（D-135）
+  function showCertFull(id) {
+    showOverlay(`<button type="button" class="cfclose" data-act="ovClose" aria-label="${T('とじる', A`閉じる`)}">✕ ${T('とじる', A`閉じる`)}</button>${certHTML(id)}
+      <button type="button" class="btn btn-sub cfprint" data-act="certPrint" data-id="${id}">${T('🖨 いんさつ', A`🖨 印刷`)}</button>`);
+    document.getElementById('overlay').classList.add('certfull');
   }
   SCREENS.badges = function () {
     const ids = visibleDs();
-    return `<header class="bar"><h2>${T('マスター バッジ', A`マスターバッジ`)} ${masterCount()} / ${ids.length}</h2><p class="hint">${ADULT ? A`マスターテストで全問正解するとバッジがもらえます。タップで認定証。` : ENTRY ? 'マスター テストで ぜんぶ せいかいすると バッジが もらえるよ。タッチで にんてい しょう。' : `マスター テストで ぜんぶ せいかいすると バッジと レアな なかまが もらえるよ。バッジ 1こで チームの 強さ +${MASTER_POW}。タッチで にんてい しょう。`}</p></header>
+    return `<header class="bar"><h2>${T('マスター バッジ', A`マスターバッジ`)} ${masterCount()} / ${ids.length}</h2><p class="hint">${ADULT ? A`マスターテストで全問正解するとバッジがもらえます。タップで認定証を見せられます。` : ENTRY ? 'マスター テストで ぜんぶ せいかいすると バッジが もらえるよ。タッチで にんてい しょうを 見せられるよ。' : `マスター テストで ぜんぶ せいかいすると バッジと レアな なかまが もらえるよ。バッジ 1こで チームの 強さ +${MASTER_POW}。タッチで にんてい しょうを 見せられるよ。`}</p></header>
       <main class="zukan badges">${ids.map(id => isMaster(id)
-        ? `<button type="button" class="zk mb on" data-act="certView" data-id="${id}"><span class="mbi">🏆</span><p class="mn">${esc(DATASETS[id].title)}</p><p class="zkr">${md(S.masters[id].day)}</p></button>`
+        ? `<button type="button" class="zk mb on" data-act="certView" data-id="${id}"><span class="mbi">🏆</span><p class="mn">${esc(DATASETS[id].title)}</p><p class="zkr">${md(S.masters[id].day)}</p><span class="mshow">${T('見せる ▶', A`見せる ▶`)}</span></button>`
         : `<div class="zk mb unk"><span class="mbi">？</span><p class="mn">${esc(DATASETS[id].title)}</p></div>`).join('')}</main>
       <footer class="dock">${btn('home', 'ホームへ', 'btn-main')}</footer>`;
   };
@@ -3632,9 +3894,9 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     let o = document.getElementById('overlay');
     if (!o) { o = document.createElement('div'); o.id = 'overlay'; document.body.appendChild(o); }
     o.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
-    o.classList.add('show');
+    o.classList.remove('certfull'); o.classList.add('show');
   }
-  function hideOverlay() { const o = document.getElementById('overlay'); if (o) { o.classList.remove('show'); o.innerHTML = ''; } }
+  function hideOverlay() { const o = document.getElementById('overlay'); if (o) { o.classList.remove('show', 'certfull'); o.innerHTML = ''; } }
   document.body.addEventListener('click', e => {
     const b = e.target.closest('#overlay [data-act]');
     if (b) { e.stopPropagation(); ACT[b.dataset.act] && ACT[b.dataset.act](b.dataset, b); }
@@ -3816,9 +4078,9 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     masterGo: () => { ui.mt.startedAt = Date.now(); go('master'); },
     masterPick: d => masterSel(+d.v),
     masterOk: () => masterPick(ui.mt && ui.mt.sel),
-    masterNext: () => { const z = ui.mt; z.fb = null; z.i++; render(); window.scrollTo(0, 0); },
+    masterNext: () => masterNext(),
     badges: () => go('badges'),
-    certView: d => showOverlay(`${certHTML(d.id)}<div class="actions">${btn('certPrint', T('🖨 いんさつ', A`🖨 印刷`), 'btn-sub', `data-id="${d.id}"`)}${btn('ovClose', T('とじる', A`閉じる`), 'btn-main')}</div>`),
+    certView: d => showCertFull(d.id),
     certPrint: d => { ui.printCert = d.id; renderPrint(); setTimeout(() => window.print(), 60); },
     ask: () => ENTRY ? go('home') : startAsk(),
     askGo: () => go('ask'),
@@ -3839,7 +4101,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     kukuExit: () => {   // 本体へ：学年が next.grade（九九は 3年）より 下なら 上げて ドリルえらびへ（D-116）
       const back = S.settings.mainDs, need = (ENTRY && ENTRY.next && ENTRY.next.grade) || 0;
       setEntry('');
-      if (S.settings.grade < need) { S.settings.grade = GRADE = need; useDs(S.settings.ds); }
+      if (S.settings.grade < need) { if (typeof S.settings.gradeSet !== 'boolean') S.settings.gradeSet = false; S.settings.grade = GRADE = need; useDs(S.settings.ds); }
       save(); ui.result = null;
       go('pick', { pickSubj: back && DATASETS[back] ? null : 'shakai', pickAll: false });
     },
@@ -3878,7 +4140,7 @@ const ART = {"boss_1": "data:image/webp;base64,UklGRrhHAABXRUJQVlA4WAoAAAAQAAAA/
     tokyo: d => { S.settings.tokyo = d.v; save(); rerenderKeepScroll(); },
     level: d => { S.settings.level = d.v; save(); rerenderKeepScroll(); },
     mins: d => { S.settings.minutes = +d.v; save(); rerenderKeepScroll(); },
-    grade: d => { S.settings.grade = GRADE = +d.v; useDs(S.settings.ds); S.settings.ds = DS.id; save(); rerenderKeepScroll(); },
+    grade: d => { S.settings.grade = GRADE = +d.v; S.settings.gradeSet = true; useDs(S.settings.ds); S.settings.ds = DS.id; save(); rerenderKeepScroll(); },
     sound: d => { S.settings.sound = d.v === 'true'; save(); rerenderKeepScroll(); },
     print: () => { ui.printCert = null; renderPrint(); setTimeout(() => window.print(), 60); },
     export: () => {
