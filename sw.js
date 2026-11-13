@@ -1,5 +1,5 @@
 /* ぐるぐる音読 Service Worker：オフラインで開けるようにする。ページは「ネット優先・だめなら保存分」、ほかは「保存分優先」 */
-const CACHE = 'guruguru-187e15dd53';
+const CACHE = 'guruguru-ea40959f3f';
 const ENTRY_PAGES = ['./kuku/', './boki3/', './eigo/', './rika3/'];   // 題材ごとの 入り口（./kuku/ など。build.py が data/index.json の entries から入れる。D-116・D-119）
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-180.png', ...ENTRY_PAGES];
 self.addEventListener('install', e => {
